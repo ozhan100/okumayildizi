@@ -69,6 +69,18 @@ KULLANIM:
 
 NOTLAR:
 - Android Chrome kullan. Samsung Internet desteklemez.
+- MİKROFON ÇALIŞMIYORSA: Öykü ekranının altındaki "🔧 Mikrofon çalışmıyor mu?
+  Tanı" düğmesine bas. Açılan panel sorunun nerede olduğunu söyler:
+    • onstart = 0        -> tanıma hiç başlamıyor (tarayıcı/izin sorunu)
+    • onaudiostart = 0   -> ses tarayıcıya ulaşmıyor (mikrofon/izin)
+    • onspeechstart = 0  -> konuşma algılanmıyor
+    • hepsi var,
+      onresult = 0       -> Google konuşma servisi yanıt vermiyor
+  "🎤 Mikrofonu 5 saniye test et" düğmesi mikrofonun ses verip vermediğini ölçer.
+- ÖNEMLİ: Android Chrome'da konuşma tanıma çok yeni bir özelliktir; eski Chrome
+  sürümlerinde hiç yoktur. Play Store'dan Chrome'u güncelle.
+- Chrome tanıma için Google'ın konuşma servisini kullanır. Klavyede sesli yazma
+  çalışmıyorsa ("Speech Services by Google" eksik/devre dışı) bu da çalışmaz.
 - Mikrofon konuşma tanıma kusursuz değildir; tam eşleşme istendiği için tanımanın
   yanlış duyduğu bir kelime kırmızı görünebilir. %90 eşiği (4-5 hata payı) bunu
   bir ölçüde telafi eder.
@@ -76,7 +88,7 @@ NOTLAR:
   güncelleyip "python _uret.py" çalıştır (oykuler.js elle düzenlenmez).
 - Veriler telefonda saklanır: okumaYildiz, okumaGun, okumaGunYildiz, okumaOyku,
   okumaGunOyku, okumaHavuz.
-- Uygulama güncellendiğinde sw.js içindeki CACHE sürümünü artır (v4 -> v5), yoksa
+- Uygulama güncellendiğinde sw.js içindeki CACHE sürümünü artır (v5 -> v6), yoksa
   telefon eski sürümü göstermeye devam eder.
 
 İyi okumalar! 📚⭐🎤

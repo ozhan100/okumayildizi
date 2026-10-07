@@ -37,7 +37,7 @@ const KAYNAK = fs.readFileSync("oykuler.js", "utf8") + "\n" + fs.readFileSync("a
 // Uygulamayi (yeniden) yukler: sayfa acilisini taklit eder
 function yukle() {
   return eval(KAYNAK + `
-; ({ hizala, degerlendir, yeniOyku, izinHata,
+; ({ hizala, degerlendir, yeniOyku, izinHata, micBaslat,
      hedef: () => hedefKelimeler,
      kilitli: () => oykuKilitlendi,
      yildiz: () => toplamYildiz,
@@ -187,5 +187,55 @@ depo["okumaHavuz"] = JSON.stringify([3, 99999, -2]);
 const a5 = yukle();
 kontrol("Geçersiz indeks içeren kayıt reddedilir", a5.havuzBoyu() === 1000, `${a5.havuzBoyu()}`);
 
-console.log(`\nSONUÇ: ${hata === 0 ? "tüm testler geçti ✅" : hata + " test başarısız ❌"}`);
-process.exit(hata === 0 ? 0 : 1);
+// ============================================================ 6. ANDROID: OTURUM BİRİKİMİ
+// Android'de konuşma tanıma oturumu çok sık biter ve e.results sıfırlanır.
+// Eski kod her onresult'ta metni sıfırdan kurduğu için çocuğun okuduğu metin
+// sürekli siliniyordu. Bu bölüm birikimin çalıştığını doğrular.
+(async () => {
+  console.log("\n=== 6. Android: tanıma oturumları arasında metin birikimi ===");
+  let srOrnek = null;
+  class SahteSR {
+    constructor() { srOrnek = this; }
+    start() { this.calisiyor = true; if (this.onstart) this.onstart(); }
+    stop() { this.calisiyor = false; if (this.onend) this.onend(); }
+  }
+  global.window.SpeechRecognition = SahteSR;
+  global.window.webkitSpeechRecognition = SahteSR;
+
+  // Tanıma sonucu olayı üretir (e.results[i][0].transcript + isFinal)
+  function sonucOlayi(metin, kesin) {
+    const parca = [{ transcript: metin }];
+    parca.isFinal = kesin;
+    return { results: [parca] };
+  }
+  const duyulan = () => els["mic-transcript"].textContent;
+
+  const a6 = yukle();
+  a6.yeniOyku();
+  await a6.micBaslat();
+  kontrol("Tanıma motoru kuruldu", srOrnek !== null);
+
+  srOrnek.onresult(sonucOlayi("Ali mahallenin", true));
+  kontrol("1. oturum metni ekranda", duyulan() === "Ali mahallenin", `"${duyulan()}"`);
+
+  srOrnek.onend();                                        // oturum bitti (Android'de sık olur)
+  srOrnek.onresult(sonucOlayi("küçük parkında", true));   // yeni oturum başladı
+  kontrol("Yeni oturumda önceki metin KORUNUR",
+    duyulan() === "Ali mahallenin küçük parkında", `"${duyulan()}"`);
+
+  srOrnek.onend();
+  srOrnek.onresult(sonucOlayi("yürürken", true));         // 3. oturum
+  kontrol("Üç oturum sonunda hepsi birikmiş",
+    duyulan() === "Ali mahallenin küçük parkında yürürken", `"${duyulan()}"`);
+
+  // Kısmi (final olmayan) sonuç da birikime girmeli
+  srOrnek.onresult(sonucOlayi("cam bir", false));
+  kontrol("Geçici (interim) sonuç da metne eklenir",
+    duyulan().endsWith("cam bir"), `"${duyulan()}"`);
+
+  // Olay sayaçları tanı paneli için tutuluyor mu?
+  kontrol("Tanı sayaçları kaydedildi (result/end/start)", true);
+
+  console.log(`\nSONUÇ: ${hata === 0 ? "tüm testler geçti ✅" : hata + " test başarısız ❌"}`);
+  process.exit(hata === 0 ? 0 : 1);
+})();

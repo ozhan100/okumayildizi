@@ -159,8 +159,11 @@ let hedefOyku = "";
 let hedefKelimeler = [];
 let recognition = null;
 let dinleniyor = false;
-let finalMetin = "";
-let sonTranskript = "";
+let sonTranskript = "";     // ekranda gösterilen tam metin
+let birikmisMetin = "";     // tamamlanmış tanıma oturumlarından biriken metin
+let oturumFinal = "";       // şu anki oturumun kesinleşmiş metni
+let mikrofonIzniAlindi = false;
+let baslatiliyor = false;   // izin istenirken buton tekrar basılmasın
 let oykuKilitlendi = false;   // bu öykünün sonucu kesinleşti mi
 let otoGecisTimer = null;
 let sonDegerlendirme = { dogru: 0, toplam: 0, yuzde: 0 };
@@ -228,7 +231,8 @@ function yeniOyku() {
   const band = zorlukBand(idx);
   havuzKaydet();
   hedefKelimeler = hedefOyku.split(/\s+/);
-  finalMetin = "";
+  birikmisMetin = "";
+  oturumFinal = "";
   sonTranskript = "";
   oykuKilitlendi = false;
   sonDegerlendirme = { dogru: 0, toplam: hedefKelimeler.length, yuzde: 0 };
@@ -367,67 +371,243 @@ function micButonuYaz(dinliyor) {
   else { btn.classList.remove("listening"); btn.innerHTML = "🎤<small>Başla</small>"; }
 }
 
-function micBaslat() {
-  if (!tanimaDestegiVarMi()) {
-    $("mic-status").textContent = "❌ Bu tarayıcı desteklemiyor. Android Chrome kullan.";
+// ---------- Tanı (teşhis) paneli ----------
+// Mikrofonun nerede takıldığını telefondan görebilmek için (sorun giderme amaçlı).
+const TANI = { olay: {}, sonHata: "-", oturum: 0, seviyeMax: -1 };
+let taniTimer = null;
+
+function taniSay(ad) { TANI.olay[ad] = (TANI.olay[ad] || 0) + 1; }
+
+function taniYaz() {
+  const el = $("tani-icerik");
+  if (!el) return;
+  const o = TANI.olay;
+  const satir = (a, b) => `<div class="tani-satir"><span>${a}</span><b>${b}</b></div>`;
+  el.innerHTML =
+    satir("Tarayıcı", (navigator.userAgent || "?").slice(0, 110)) +
+    satir("Güvenli bağlantı", location.protocol === "https:" ? "evet ✅" : "HAYIR ❌ (" + location.protocol + ")") +
+    satir("SpeechRecognition", window.SpeechRecognition ? "var" :
+         (window.webkitSpeechRecognition ? "var (webkit önekli)" : "YOK ❌")) +
+    satir("getUserMedia", (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ? "var ✅" : "YOK ❌") +
+    satir("İzin (getUserMedia)", mikrofonIzniAlindi ? "alındı ✅" : "alınmadı") +
+    satir("Başlatma sayısı", TANI.oturum) +
+    satir("onstart", o.start || 0) +
+    satir("onaudiostart", o.audiostart || 0) +
+    satir("onsoundstart", o.soundstart || 0) +
+    satir("onspeechstart", o.speechstart || 0) +
+    satir("onresult (sonuç)", o.result || 0) +
+    satir("onerror", o.error || 0) +
+    satir("onend", o.end || 0) +
+    satir("Son hata", TANI.sonHata) +
+    satir("Duyulan kelime", (sonTranskript || "—").split(/\s+/).filter(Boolean).length) +
+    satir("Mikrofon seviyesi", TANI.seviyeMax < 0 ? "test edilmedi" : TANI.seviyeMax.toFixed(3)) +
+    `<div class="tani-not"><b>Nasıl okunur:</b><br>
+      • <b>onstart</b> yoksa → tanıma hiç başlamıyor<br>
+      • <b>onaudiostart</b> yoksa → ses tarayıcıya ulaşmıyor<br>
+      • <b>onspeechstart</b> yoksa → konuşma algılanmıyor<br>
+      • Hepsi var ama <b>onresult</b> yoksa → Google konuşma servisi yanıt vermiyor</div>`;
+}
+
+function taniAc() {
+  const p = $("tani-panel");
+  if (!p) return;
+  p.classList.remove("hidden");
+  taniYaz();
+  if (!taniTimer) taniTimer = setInterval(taniYaz, 700);
+}
+function taniKapat() {
+  const p = $("tani-panel");
+  if (p) p.classList.add("hidden");
+  if (taniTimer) { clearInterval(taniTimer); taniTimer = null; }
+}
+function taniDegistir() {
+  const p = $("tani-panel");
+  if (!p || p.classList.contains("hidden")) taniAc(); else taniKapat();
+}
+
+// Mikrofonun tarayıcıya ses verip vermediğini ölçer (konuşma tanımadan bağımsız).
+// Böylece "mikrofon mu, yoksa Google servisi mi?" sorusu kesin cevaplanır.
+async function mikrofonSeviyeTesti() {
+  const durumEl = $("tani-seviye");
+  if (!durumEl) return;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    durumEl.textContent = "❌ getUserMedia yok, test edilemiyor.";
     return;
   }
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!recognition) {
-    recognition = new SR();
-    recognition.lang = "tr-TR";
-    recognition.continuous = true;
-    recognition.interimResults = true;
-
-    recognition.onresult = (e) => {
-      let ara = "";
-      finalMetin = "";
-      for (let i = 0; i < e.results.length; i++) {
-        const txt = e.results[i][0].transcript;
-        if (e.results[i].isFinal) finalMetin += txt + " ";
-        else ara += txt + " ";
-      }
-      const toplam = (finalMetin + " " + ara).trim();
-      sonTranskript = toplam;
-      $("mic-transcript").textContent = toplam || "Dinliyorum...";
-      if (oykuKilitlendi) return;           // sonuç kesinleşti
-      degerlendir(toplam);                  // son kelime çözülünce kilitle() çağrılır
-    };
-    recognition.onerror = (e) => {
-      if (e.error === "not-allowed" || e.error === "service-not-allowed") {
-        $("mic-status").textContent = "❌ Mikrofon izni verilmedi. Adres çubuğundaki 🎤 simgesinden izin ver.";
-        micDurdur(false);
-      } else if (e.error === "no-speech") {
-        $("mic-status").textContent = "🔇 Ses duyamadım, telefona yaklaş ve tekrar oku.";
-      } else if (e.error === "network") {
-        $("mic-status").textContent = "🌐 İnternet gerekli: tanıma Google'a bağlanır. Wi-Fi'yi aç.";
-      } else {
-        $("mic-status").textContent = "⚠️ Hata: " + e.error;
-      }
-    };
-    recognition.onend = () => {
-      if (dinleniyor) { try { recognition.start(); } catch (err) { /* yok say */ } }
-    };
-  }
-  finalMetin = "";
-  sonTranskript = "";
-  if (!oykuKilitlendi) {
-    // Aynı öyküde yeniden okumaya izin ver: renkleri sıfırla
-    hedefKelimeler.forEach((_, i) => {
-      const el = $("pw-" + i);
-      if (el) { el.classList.remove("w-ok", "w-bad"); el.classList.add("w-yellow"); }
-    });
-    sonDegerlendirme = { dogru: 0, toplam: hedefKelimeler.length, yuzde: 0 };
-    $("mic-score").textContent = `Doğruluk: — (${hedefKelimeler.length} kelime • en fazla ${izinHata(hedefKelimeler.length)} hata)`;
-  }
-  dinleniyor = true;
+  micDurdur(false);
+  durumEl.textContent = "🎤 Ölçülüyor... 5 saniye boyunca yüksek sesle konuşun.";
+  let akis = null, ctx = null;
   try {
-    recognition.start();
-    $("mic-status").textContent = "🔴 Dinliyorum... Öyküyü baştan sona oku!";
-    micButonuYaz(true);
-  } catch (err) {
-    $("mic-status").textContent = "⚠️ Mikrofon başlatılamadı, tekrar dene.";
+    akis = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mikrofonIzniAlindi = true;
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const kaynak = ctx.createMediaStreamSource(akis);
+    const analiz = ctx.createAnalyser();
+    analiz.fftSize = 2048;
+    kaynak.connect(analiz);
+    const veri = new Uint8Array(analiz.fftSize);
+    let enBuyuk = 0;
+    const bitis = Date.now() + 5000;
+    while (Date.now() < bitis) {
+      analiz.getByteTimeDomainData(veri);
+      let tepe = 0;
+      for (let i = 0; i < veri.length; i++) tepe = Math.max(tepe, Math.abs(veri[i] - 128));
+      const seviye = tepe / 128;
+      if (seviye > enBuyuk) enBuyuk = seviye;
+      durumEl.textContent = `🎤 Seviye: ${seviye.toFixed(3)} • en yüksek: ${enBuyuk.toFixed(3)}`;
+      await new Promise(r => setTimeout(r, 100));
+    }
+    TANI.seviyeMax = enBuyuk;
+    durumEl.textContent = enBuyuk > 0.05
+      ? `✅ Mikrofon sesi tarayıcıya ulaşıyor (en yüksek ${enBuyuk.toFixed(3)}). Sorun konuşma tanıma servisinde.`
+      : `❌ Ses algılanmadı (en yüksek ${enBuyuk.toFixed(3)}). Mikrofon izni veya cihaz sorunu olabilir.`;
+  } catch (e) {
+    const ad = e && e.name ? e.name : e;
+    durumEl.textContent = "❌ Mikrofon açılamadı: " + ad;
+    TANI.sonHata = "getUserMedia testi: " + ad;
+  } finally {
+    if (akis) akis.getTracks().forEach(t => t.stop());
+    if (ctx) { try { await ctx.close(); } catch (e) { /* yok say */ } }
+    taniYaz();
   }
+}
+
+// Android'de konuşma tanıma, mikrofon izni getUserMedia ile önceden alınmışsa
+// daha güvenilir çalışır. İzni bir kez önden isteriz.
+async function mikrofonIzniAl() {
+  if (mikrofonIzniAlindi) return true;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return true;
+  try {
+    const akis = await navigator.mediaDevices.getUserMedia({ audio: true });
+    akis.getTracks().forEach(t => t.stop());
+    mikrofonIzniAlindi = true;
+    return true;
+  } catch (e) {
+    TANI.sonHata = "izin: " + (e && e.name ? e.name : e);
+    return false;
+  }
+}
+
+function tanimaKur() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = "tr-TR";
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 1;
+
+  recognition.onstart = () => { taniSay("start"); };
+  recognition.onaudiostart = () => { taniSay("audiostart"); };
+  recognition.onsoundstart = () => { taniSay("soundstart"); };
+  recognition.onspeechstart = () => { taniSay("speechstart"); };
+  recognition.onnomatch = () => { taniSay("nomatch"); };
+
+  recognition.onresult = (e) => {
+    taniSay("result");
+    let ara = "";
+    oturumFinal = "";
+    for (let i = 0; i < e.results.length; i++) {
+      const txt = e.results[i][0].transcript;
+      if (e.results[i].isFinal) oturumFinal += txt + " ";
+      else ara += txt + " ";
+    }
+    // ÖNEMLİ: Android'de tanıma oturumu sık sık biter ve e.results sıfırlanır.
+    // Bu yüzden önceki oturumların metni ayrıca biriktirilir; yoksa çocuk
+    // okurken metin sürekli silinir ve hiçbir zaman öyküyle eşleşmez.
+    const toplam = (birikmisMetin + " " + oturumFinal + " " + ara).replace(/\s+/g, " ").trim();
+    sonTranskript = toplam;
+    $("mic-transcript").textContent = toplam || "Dinliyorum...";
+    if (oykuKilitlendi) return;   // sonuç kesinleşti
+    degerlendir(toplam);          // son kelime çözülünce kilitle() çağrılır
+  };
+
+  recognition.onerror = (e) => {
+    taniSay("error");
+    TANI.sonHata = e.error + (e.message ? " — " + e.message : "");
+    if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+      $("mic-status").textContent = "❌ Mikrofon izni verilmedi. Adres çubuğundaki 🎤 simgesinden izin ver.";
+      micDurdur(false);
+    } else if (e.error === "audio-capture") {
+      $("mic-status").textContent = "❌ Mikrofon bulunamadı. Başka bir uygulama mikrofonu kullanıyor olabilir.";
+    } else if (e.error === "no-speech") {
+      $("mic-status").textContent = "🔇 Ses duyamadım, telefona yaklaş ve tekrar oku.";
+    } else if (e.error === "network") {
+      $("mic-status").textContent = "🌐 Konuşma servisine ulaşılamadı. İnterneti kontrol et.";
+    } else {
+      $("mic-status").textContent = "⚠️ Hata: " + e.error;
+    }
+  };
+
+  recognition.onend = () => {
+    taniSay("end");
+    // Oturum bitti: kesinleşen metni birikime ekle ki kaybolmasın.
+    birikmisMetin = (birikmisMetin + " " + oturumFinal).replace(/\s+/g, " ").trim();
+    oturumFinal = "";
+    if (!dinleniyor) return;
+    // Android'de oturumlar çok sık biter; hemen yeniden başlatmak hata verebilir.
+    // Kısa bir gecikmeyle ve durum kontrolüyle yeniden deneriz.
+    setTimeout(() => {
+      if (!dinleniyor || !recognition) return;
+      try {
+        recognition.start();
+        TANI.oturum++;
+      } catch (err) {
+        const ad = err && err.name ? err.name : err;
+        TANI.sonHata = "yeniden başlatma: " + ad;
+        $("mic-status").textContent = "⚠️ Tanıma yeniden başlatılamadı. Durdur'a basıp tekrar dene.";
+        dinleniyor = false;
+        micButonuYaz(false);
+      }
+    }, 250);
+  };
+}
+
+function micBaslat() {
+  if (!tanimaDestegiVarMi()) {
+    $("mic-status").textContent =
+      "❌ Bu tarayıcı konuşma tanımayı desteklemiyor. Chrome'un güncel sürümünü kullan.";
+    taniAc();
+    return;
+  }
+  mikrofonIzniAl().then((izin) => {
+    if (!izin) {
+      $("mic-status").textContent = "❌ Mikrofon izni verilmedi. Tarayıcı izinlerinden mikrofonu aç.";
+      taniAc();
+      return;
+    }
+    if (!recognition) tanimaKur();
+    birikmisMetin = "";
+    oturumFinal = "";
+    sonTranskript = "";
+    if (!oykuKilitlendi) {
+      // Aynı öyküde yeniden okumaya izin ver: renkleri sıfırla
+      hedefKelimeler.forEach((_, i) => {
+        const el = $("pw-" + i);
+        if (el) { el.classList.remove("w-ok", "w-bad"); el.classList.add("w-yellow"); }
+      });
+      sonDegerlendirme = { dogru: 0, toplam: hedefKelimeler.length, yuzde: 0 };
+      $("mic-score").textContent = `Doğruluk: — (${hedefKelimeler.length} kelime • en fazla ${izinHata(hedefKelimeler.length)} hata)`;
+    }
+    dinleniyor = true;
+    try {
+      recognition.start();
+      TANI.oturum++;
+      $("mic-status").textContent = "🔴 Dinliyorum... Öyküyü baştan sona oku!";
+      micButonuYaz(true);
+    } catch (err) {
+      const ad = err && err.name ? err.name : err;
+      TANI.sonHata = "başlatma: " + ad;
+      if (ad === "InvalidStateError") {
+        // Zaten çalışıyor: sorun değil
+        $("mic-status").textContent = "🔴 Dinliyorum... Öyküyü baştan sona oku!";
+        micButonuYaz(true);
+      } else {
+        dinleniyor = false;
+        $("mic-status").textContent = "⚠️ Mikrofon başlatılamadı: " + ad;
+        taniAc();
+      }
+    }
+  });
 }
 
 // manuel=true: çocuk Durdur'a bastı -> sonucu kesinleştir
@@ -437,9 +617,12 @@ function micDurdur(manuel) {
   if (otoGecisTimer) { clearTimeout(otoGecisTimer); otoGecisTimer = null; }
   try { if (recognition) recognition.stop(); } catch (err) { /* yok say */ }
   micButonuYaz(false);
+  // Son oturumun kesinleşen metnini birikime kat (henüz eklenmemişse).
+  birikmisMetin = (birikmisMetin + " " + oturumFinal).replace(/\s+/g, " ").trim();
+  oturumFinal = "";
   if (!manuel || oykuKilitlendi) return;
 
-  const metin = (finalMetin.trim() || sonTranskript.trim());
+  const metin = (sonTranskript || birikmisMetin).trim();
   if (!metin) {
     $("mic-status").textContent = "Mikrofon kapalı.";
     if (okumaVardi) $("mic-feedback").textContent = "🔇 Ses duyamadım. 🎤 Başla'ya bas ve öyküyü oku.";
@@ -458,13 +641,23 @@ $("btn-start-mic").onclick = () => {
   guncelleYildiz();
   if (!hedefOyku) yeniOyku();
 };
-$("btn-mic-home").onclick = () => { micDurdur(false); show("start"); guncelleYildiz(); };
+$("btn-mic-home").onclick = () => { micDurdur(false); taniKapat(); show("start"); guncelleYildiz(); };
 $("btn-new-para").onclick = () => yeniOyku();
 $("btn-listen-para").onclick = () => { if (hedefOyku) seslendir(hedefOyku); };
 $("btn-mic").onclick = () => {
   if (oykuKilitlendi) return;            // sonuç kesinleşti, sıradaki öykü beklenir
-  dinleniyor ? micDurdur(true) : micBaslat();
+  if (dinleniyor) { micDurdur(true); return; }
+  if (baslatiliyor) return;              // izin istenirken tekrar basılmasın
+  baslatiliyor = true;
+  const b = $("btn-mic");
+  if (b) b.innerHTML = "⏳<small>Bekle</small>";
+  Promise.resolve()
+    .then(() => micBaslat())
+    .finally(() => { baslatiliyor = false; micButonuYaz(dinleniyor); });
 };
+$("tani-ac").onclick = () => taniAc();
+$("tani-kapat").onclick = () => taniKapat();
+$("mic-test").onclick = () => mikrofonSeviyeTesti();
 
 // PWA service worker (offline - öyküler gömülü olduğu için liste offline çalışır)
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {

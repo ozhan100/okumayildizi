@@ -38,6 +38,44 @@ okur, mikrofon dinler, kelimeler doğru/yanlış/okunmadı olarak canlı boyanı
 > tanımanın yanlış duyduğu bir kelime kırmızı görünebilir. %90 eşiği (4-5 hata
 > payı) bunu bir ölçüde telafi eder.
 
+## 🔧 Mikrofon çalışmıyorsa (özellikle Android)
+
+Öykü ekranının altındaki **"🔧 Mikrofon çalışmıyor mu? Tanı"** düğmesine basın.
+Açılan panel şunları gösterir:
+
+- Tarayıcı bilgisi, HTTPS durumu
+- `SpeechRecognition` API'si var mı (yoksa tarayıcı desteklemiyor demektir)
+- Mikrofon izni alındı mı
+- **Olay sayaçları** — sorunun nerede olduğunu kesin söyler:
+
+| Belirti | Anlamı |
+|---|---|
+| `onstart` = 0 | Tanıma hiç başlamıyor (API/izin sorunu) |
+| `onaudiostart` = 0 | Ses tarayıcıya ulaşmıyor (mikrofon/izin) |
+| `onspeechstart` = 0 | Konuşma algılanmıyor (mikrofon seviyesi/sessizlik) |
+| Hepsi var, `onresult` = 0 | Konuşma servisi yanıt vermiyor (ağ/servis sorunu) |
+
+Ayrıca **"🎤 Mikrofonu 5 saniye test et"** düğmesi, konuşma tanımadan bağımsız
+olarak mikrofonun tarayıcıya ses verip vermediğini ölçer. Böylece "mikrofon mu,
+yoksa Google servisi mi?" sorusu net cevaplanır.
+
+### Android'de bilinen kısıtlar
+
+- **Chrome for Android'de bu API çok yenidir.** [caniuse](https://caniuse.com/speech-recognition)
+  verisine göre Android Chrome'da konuşma tanıma ancak **154 ve sonrası** sürümlerde
+  destekleniyor. Daha eski Chrome sürümlerinde API hiç bulunmaz ve uygulama
+  "Bu tarayıcı desteklemiyor" uyarısı verir. **Play Store'dan Chrome'u güncelleyin.**
+- Chrome, tanıma için **Google'ın konuşma servisini** kullanır. Cihazda
+  "Speech Services by Google" uygulaması eksik/devre dışıysa sonuç hiç gelmez
+  (klavye ile sesli yazma da çalışmaz — bu iyi bir testtir).
+- **Samsung Internet** bu API'yi desteklemez. Ana ekrana eklenen kısayol
+  Samsung Internet ile açılıyorsa çalışmaz; kısayolu Chrome ile açın.
+- Android'de tanıma oturumu sık sık biter. Uygulama bu durumu yönetir: metin
+  oturumlar arasında **biriktirilir** (aksi hâlde çocuk okurken metin sürekli
+  silinirdi) ve tanıma kısa bir gecikmeyle yeniden başlatılır.
+- Mikrofon izni, tanımadan önce `getUserMedia` ile önden istenir; Android'de bu
+  tanımanın güvenilirliğini artırır.
+
 ### Öykü sırası: her açılışta karışık
 
 Öyküler sabit bir sırayla (1, 2, 3...) gösterilmez. Uygulama **okunmamış havuzdan
@@ -130,6 +168,6 @@ git add -A && git commit -m "aciklama" && git push
 Site 1-2 dakikada güncellenir.
 
 > ⚠️ **ÖNEMLİ:** Uygulama dosyaları değiştiğinde `sw.js` içindeki
-> `CACHE = "okuma-yildizi-v4"` sürümünü artırın (v5, v6...). Aksi hâlde çocuğun
+> `CACHE = "okuma-yildizi-v5"` sürümünü artırın (v6, v7...). Aksi hâlde çocuğun
 > cihazı eski sürümü önbellekten göstermeye devam eder. (`sw.js` eski önbellekleri
 > otomatik siler, ancak sürüm numarası artırılmalıdır.)

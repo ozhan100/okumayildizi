@@ -94,6 +94,32 @@ h1 { margin: 8px 0 4px; font-size: 34px; color: #2c3e50; }
 .w-wrong-demo { background: #FFCDD2; border-radius: 6px; padding: 0 6px; font-weight: 800; }
 .w-yellow-demo { background: #FFF6C4; border-radius: 6px; padding: 0 6px; font-weight: 800; }
 
+/* --- Mikrofon tanı paneli --- */
+.tani-ac-satir { text-align: center; margin-top: 10px; }
+.tani-btn {
+    font-family: inherit; font-size: 15px; font-weight: 700;
+    background: #fff; color: #555; border: 2px dashed #BDBDBD;
+    border-radius: 12px; padding: 8px 14px; cursor: pointer;
+}
+.tani-panel {
+    background: #FFFDE7; border: 2px solid #FFC107; border-radius: 16px;
+    padding: 12px; margin-top: 12px;
+}
+.tani-baslik { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 16px; }
+.tani-kapat { border: none; background: #FFE082; border-radius: 8px; font-size: 15px; padding: 2px 10px; cursor: pointer; font-family: inherit; }
+.tani-icerik { font-size: 13px; }
+.tani-satir { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; border-bottom: 1px dotted #E0E0E0; }
+.tani-satir span { color: #666; }
+.tani-satir b { text-align: right; word-break: break-word; }
+.tani-not { margin-top: 8px; font-size: 12px; color: #555; line-height: 1.5; background: #fff; border-radius: 10px; padding: 8px; }
+.tani-test {
+    width: 100%; margin-top: 10px; font-family: inherit; font-size: 15px; font-weight: 800;
+    background: #E3F2FD; border: none; border-radius: 12px; padding: 10px; cursor: pointer;
+    box-shadow: 0 3px 0 #90CAF9;
+}
+.tani-test:active { transform: translateY(2px); box-shadow: none; }
+.tani-seviye { margin-top: 8px; font-size: 13px; font-weight: 700; text-align: center; color: #444; min-height: 18px; }
+
 /* --- Günlük görev --- */
 .daily-box { background: #E8F5E9; border: 2px dashed #43A047; border-radius: 16px; padding: 14px; margin: 12px 0; }
 .daily-title { font-size: 20px; font-weight: 800; }
