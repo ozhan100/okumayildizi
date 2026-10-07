@@ -398,12 +398,50 @@ function izinEtiketi() {
   }
 }
 
+// Tanı verilerinden tek satırlık net karar üretir.
+function taniKarar() {
+  const o = TANI.olay;
+  if (!tanimaDestegiVarMi()) {
+    return ["kotu", "❌ Bu tarayıcı konuşma tanımayı DESTEKLEMİYOR."];
+  }
+  if (TANI.izin === "denied") {
+    return ["kotu", "❌ Mikrofon izni ENGELLENMİŞ."];
+  }
+  if ((o.start || 0) === 0) {
+    return ["kotu", "❌ Konuşma tanıma hiç BAŞLAMIYOR (🎤 Başla'ya basıldı mı?)."];
+  }
+  if ((o.audiostart || 0) === 0) {
+    return ["kotu", "❌ Ses tarayıcıya ULAŞMIYOR (mikrofon/izin sorunu)."];
+  }
+  if ((o.speechstart || 0) === 0) {
+    return ["orta", "⚠️ Ses geliyor ama KONUŞMA ALGILANMIYOR (mikrofon seviye testini yapın)."];
+  }
+  if ((o.result || 0) === 0) {
+    return ["orta", "⚠️ Konuşma algılanıyor ama Google servisi SONUÇ VERMİYOR (ağ/servis sorunu)."];
+  }
+  return ["iyi", "✅ Konuşma tanıma ÇALIŞIYOR (sonuç alındı)."];
+}
+
+async function taniKopyala() {
+  const el = $("tani-icerik");
+  const seviye = $("tani-seviye");
+  const metin = (el ? el.innerText : "") + "\n" + (seviye ? seviye.textContent : "");
+  try {
+    await navigator.clipboard.writeText(metin);
+    if (seviye) seviye.textContent = "📋 Kopyalandı! Bu metni mesaj olarak yapıştırabilirsiniz.";
+  } catch (e) {
+    if (seviye) seviye.textContent = "Kopyalanamadı — bilgileri elle yazmanız gerekebilir.";
+  }
+}
+
 function taniYaz() {
   const el = $("tani-icerik");
   if (!el) return;
   const o = TANI.olay;
   const satir = (a, b) => `<div class="tani-satir"><span>${a}</span><b>${b}</b></div>`;
+  const karar = taniKarar();
   el.innerHTML =
+    `<div class="tani-karar ${karar[0]}">${karar[1]}</div>` +
     satir("Tarayıcı", (navigator.userAgent || "?").slice(0, 110)) +
     satir("Güvenli bağlantı", location.protocol === "https:" ? "evet ✅" : "HAYIR ❌ (" + location.protocol + ")") +
     satir("SpeechRecognition", window.SpeechRecognition ? "var" :
@@ -704,6 +742,7 @@ $("btn-mic").onclick = () => {
 $("tani-ac").onclick = () => taniAc();
 $("tani-kapat").onclick = () => taniKapat();
 $("mic-test").onclick = () => mikrofonSeviyeTesti();
+$("tani-kopyala").onclick = () => taniKopyala();
 
 // PWA service worker (offline - öyküler gömülü olduğu için liste offline çalışır)
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {

@@ -108,6 +108,14 @@ h1 { margin: 8px 0 4px; font-size: 34px; color: #2c3e50; }
 .tani-baslik { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 16px; }
 .tani-kapat { border: none; background: #FFE082; border-radius: 8px; font-size: 15px; padding: 2px 10px; cursor: pointer; font-family: inherit; }
 .tani-icerik { font-size: 13px; }
+.tani-karar {
+    font-size: 15px; font-weight: 800; line-height: 1.45;
+    border-radius: 12px; padding: 10px; margin-bottom: 10px;
+}
+.tani-karar.iyi { background: #C8E6C9; color: #1B5E20; border: 2px solid #43A047; }
+.tani-karar.orta { background: #FFF3E0; color: #E65100; border: 2px solid #FB8C00; }
+.tani-karar.kotu { background: #FFEBEE; color: #B71C1C; border: 2px solid #E53935; }
+.tani-kopyala { background: #F3E5F5; box-shadow: 0 3px 0 #CE93D8; }
 .tani-satir { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; border-bottom: 1px dotted #E0E0E0; }
 .tani-satir span { color: #666; }
 .tani-satir b { text-align: right; word-break: break-word; }
