@@ -1,0 +1,17 @@
+{
+  "name": "Okuma Yıldızı - 2. Sınıf",
+  "short_name": "Okuma Yıldızı",
+  "description": "2. sınıf okuma antrenmanı: hecele-oku, dinle-tekrarla",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#E3F2FD",
+  "theme_color": "#4A90D9",
+  "lang": "tr",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

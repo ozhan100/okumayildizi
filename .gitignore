@@ -1,0 +1,9 @@
+# Yayına girmemesi gerekenler
+*.zip
+
+# Editör / işletim sistemi
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store

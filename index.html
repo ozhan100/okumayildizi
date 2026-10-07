@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4A90D9">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Okuma Yıldızı">
+    <title>Okuma Yıldızı - 2. Sınıf</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+
+        <!-- BAŞLANGIÇ EKRANI -->
+        <div id="screen-start" class="screen active">
+            <div class="start-card">
+                <div class="logo">📚</div>
+                <h1>Okuma Yıldızı</h1>
+                <p class="subtitle">2. Sınıf Cümle Okuma (10 kelime)</p>
+
+                <div class="daily-box">
+                    <div class="daily-title">🎯 Günlük Görev: 10 yıldız</div>
+                    <div class="daily-count"><b id="daily-start">0</b> / 10 ⭐</div>
+                    <div class="flawless-count">✅ Hatasız cümle: <b id="hatasiz-start">0/5</b> → ⭐</div>
+                    <svg id="yildiz-start" class="yildiz-svg kucuk" viewBox="0 0 120 120" role="img" aria-label="Yıldız ilerlemesi"></svg>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="daily-bar-start"></div>
+                    </div>
+                    <div class="daily-msg" id="daily-msg-start">Haydi başla!</div>
+                </div>
+
+                <div class="stars-bar">🌟 Toplam yıldız: <b id="total-stars-start">0</b> &nbsp;•&nbsp; 📝 <b id="para-count-start">5000</b> cümle</div>
+
+                <button id="btn-start-mic" class="btn-big btn-green">
+                    <span class="btn-emoji">🎤</span>
+                    <span class="btn-text">Okumaya Başla<small>Cümleyi yüksek sesle oku, 5 hatasız yap ⭐ kazan</small></span>
+                </button>
+
+                <p class="hint">🎤 Mikrofon modu internet ister (Chrome).<br>Sessiz odada, telefona yakın oku.</p>
+            </div>
+        </div>
+
+        <!-- MİKROFONLU PARAGRAF EKRANI -->
+        <div id="screen-mic" class="screen">
+            <div class="header">
+                <button class="btn-icon" id="btn-mic-home" title="Ana sayfa">🏠</button>
+                <h2>🎤 Cümle Oku</h2>
+                <div class="star-count">🎯 <span id="daily-mic">0</span>/10</div>
+            </div>
+
+            <div class="daily-mini">
+                <div class="progress-container">
+                    <div class="progress-bar" id="daily-bar-mic"></div>
+                </div>
+            </div>
+
+            <div class="card para-card">
+                <div id="para-label">Cümle #1 / 5000 👇 Yüksek sesle oku</div>
+                <div id="para-text">Hazırlanıyor...</div>
+            </div>
+
+            <div id="mic-score" class="score-line">Doğruluk: — </div>
+            <div id="hatasiz-line" class="flawless-line">✅ Hatasız: <b id="hatasiz-mic">0/5</b> → ⭐</div>
+            <svg id="yildiz-mic" class="yildiz-svg" viewBox="0 0 120 120" role="img" aria-label="Yıldız ilerlemesi"></svg>
+            <div id="mic-feedback" class="feedback-line">🎤'ye bas ve cümleyi oku. Bitince Durdur'a bas, sonucu gör. Hazır olunca ⏭️ Atla'ya bas.</div>
+
+            <div class="controls">
+                <button id="btn-new-para" class="btn-round btn-next" title="Yeni cümle">⏭️<small>Atla</small></button>
+                <button id="btn-listen-para" class="btn-round btn-listen" title="Örnek okuma">🔊<small>Örnek</small></button>
+                <button id="btn-mic" class="btn-round btn-mic" title="Mikrofon">🎤<small>Başla</small></button>
+            </div>
+
+            <div id="mic-status" class="status-line">Mikrofon kapalı.</div>
+            <div class="transcript-box">
+                <b>Duyduğum:</b>
+                <span id="mic-transcript">—</span>
+            </div>
+            <p class="hint">Doğrular <span class="w-ok-demo">yeşil</span>, yanlışlar <span class="w-wrong-demo">kırmızı</span> olur. Yıldız için hepsi yeşil olmalı! Başardıkça cümleler bir tık zorlaşır 🚀</p>
+        </div>
+
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

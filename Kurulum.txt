@@ -1,0 +1,48 @@
+OKUMA YILDIZI - Telefona Kurulum
+==============================
+Tek mod: Cümle Oku (mikrofon, ~10 kelimelik 5000 cümle). INTERNET İSTER.
+
+KURALLAR:
+- 5000 cümle (104 kısa cümleden 5000 benzersiz 10 kelimelik cümle üretilir, kolaydan zora sıralı).
+- Zorluk göstergesi: ★☆☆ Kolay -> ★★☆ Orta -> ★★★ Zor (cümle başında yazar).
+- Yıldız kuralı: her 5 hatasız (10'da 10) cümle = 1 yıldız. Sayaç ekranda "Hatasız: X/5" yazar.
+- Günlük görev: 10 yıldız = günde 50 hatasız cümle. Hatasız ve yıldız sayaçları gece yarısı sıfırlanır, toplamlar durur.
+- 5 kollu bir yıldız: her hatasız cümlede bir kol altın olur, 5'te yıldız tamamen parlak olur. Yıldız kazandığında şıklıkla parlar.
+- Başarılı okudukça bir tık zorlaşır: üst üste her 5 hatasızda liste 2 adım ileri sarar (yumuşak).
+- Zorlanınca bir tık kolaylaşır: üst üste 2 kez %60 altı olursa 2 adım geri alınır (en az başa kadar).
+- Yıldız için 10'da 10 şart: cümledeki TÜM kelimeler yeşil olmalı.
+- Otomatik geçiş: 10'da 10 olunca sonucu 4 saniye gösterir, sonra kendisi yeni cümleye geçer.
+- Manuel Durdur: çocuk Durdur'a basarsa otomatik geçiş iptal, cümle ekranda kalır, ⏭️ Atla ile geçer.
+
+KURULUM - EN KOLAY YOL (internet sitesi, önerilen):
+1. Telefonda Chrome'a yaz:  https://ozhan100.github.io/okumayildizi/
+2. Chrome menü (⋮) > "Ana ekrana ekle".
+3. İlk mikrofon kullanımında "İzin ver".
+4. Sessiz odada, telefona 20-30 cm yakın oku.
+Avantaj: Bilgisayar açık olmak zorunda değil, HTTPS olduğu için mikrofon sorunsuz
+çalışır, bir kez açıldıktan sonra internet olmadan da açılır (önbellek).
+
+KURULUM - Wi-Fi ile (bilgisayardan, yedek yöntem):
+1. Bilgisayarda bu klasörde çalıştır:
+     python -m http.server 8000
+2. Telefon aynı Wi-Fi'ye bağlı olsun.
+3. Telefonda Chrome'a yaz: http://BILGISAYAR-IP:8000
+   (Bilgisayar IP için: ipconfig)
+4. Chrome menü (⋮) > "Ana ekrana ekle".
+5. İlk mikrofon kullanımında "İzin ver".
+6. Sessiz odada, telefona 20-30 cm yakın oku.
+NOT: Mikrofon file:// ile ÇALIŞMAZ, yukarıdaki iki yöntemden birini kullan.
+
+KULLANIM:
+1. Okumaya Başla -> Cümle #X / 5000 gelir.
+2. 🔊 Örnek -> telefon doğru okuyuşu okur.
+3. 🎤 Başla -> çocuk okur, kelimeler canlı yeşil/kırmızı olur.
+4. Hepsi yeşilse (10/10) -> 4 saniye sonucu gösterip otomatik yeni cümle gelir. İstersen Durdur'a basıp sonucu uzun tutabilirsin.
+5. Yanlışsa/yarımkalmışsa -> ⏹️ Durdur, sonucu gör, hazır olunca ⏭️ Atla -> yeni cümle.
+
+NOTLAR:
+- Android Chrome kullan. Samsung Internet desteklemez.
+- Yeni cümle eklemek için app.js içinde CUMLE_HAVUZU listesine ekle.
+- Veriler telefonda saklanır: okumaYildiz, okumaGun, okumaGunYildiz, okumaGunHatasiz, okumaHatasiz, okumaParaSira, okumaSeriBasari, okumaSeriZor.
+
+İyi okumalar! 📚⭐🎤
