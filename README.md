@@ -38,7 +38,23 @@ okur, mikrofon dinler, kelimeler doğru/yanlış/okunmadı olarak canlı boyanı
 > tanımanın yanlış duyduğu bir kelime kırmızı görünebilir. %90 eşiği (4-5 hata
 > payı) bunu bir ölçüde telafi eder.
 
-### Öykü sırası hakkında
+### Öykü sırası: her açılışta karışık
+
+Öyküler sabit bir sırayla (1, 2, 3...) gösterilmez. Uygulama **okunmamış havuzdan
+rastgele çekme** yöntemini kullanır:
+
+- Uygulama her açıldığında (örneğin **ertesi gün**) sıra farklıdır — hep aynı öyküyle
+  başlama durumu olmaz.
+- Buna karşılık bir öykü, **bütün öyküler okunana kadar tekrar karşımıza çıkmaz.**
+- Okunan öyküler cihazda saklanır; uygulama kapanıp açılsa da kaldığın yerden devam eder.
+- 1000 öykünün hepsi bitince **otomatik yeni tur** başlar ve sıra yeniden karışır.
+- Başlangıç ekranındaki "🎲 Sıradaki tura kadar" sayacı, bu turda kaç öykü kaldığını
+  gösterir.
+
+Havuz kaydı bozulursa (nadiren) uygulama kendini otomatik toparlar ve tam havuzla
+devam eder.
+
+### Kaynak belgedeki tekrar hakkında
 
 Kaynak belgedeki 1000 öykü, 10 şablon cümlenin kombinasyonudur: belgedeki sırayla
 **100 öykü boyunca ilk iki cümle birebir aynıdır**. Bu tekrarı önlemek için öyküler
@@ -76,7 +92,7 @@ her öyküde farklı bir metinle karşılaşır.
 Tüm ilerleme cihazda `localStorage` içinde tutulur, sunucuya gönderilmez:
 `okumaYildiz` (toplam yıldız), `okumaGun` (son gün), `okumaGunYildiz` (günlük yıldız),
 `okumaOyku` (toplam okunan öykü), `okumaGunOyku` (bugün okunan öykü),
-`okumaParaSira` (sıradaki öykü).
+`okumaHavuz` (henüz okunmamış öyküler — karışık sıra buradan gelir).
 
 ## Geliştirme
 
@@ -101,6 +117,9 @@ node _test.js
 Yıldız kuralını doğrular: %90 sınırı, izin verilen hata sayısı, yuvarlama şişirmesi,
 "sonuna kadar okuma" koruması, tam kelime eşleşmesi ve **kayma hatası koruması**
 (tek bir eksik/fazla kelimenin öykünün geri kalanını kırmızıya çevirmemesi).
+Ayrıca öykü havuzunu test eder: karışık sıra, tekrarsızlık, uygulama kapanıp
+açıldığında (ertesi gün) ilerlemenin korunması, tur bitince yenilenme ve bozuk
+kayıttan kurtarma.
 
 ### Yayına alma
 
@@ -111,6 +130,6 @@ git add -A && git commit -m "aciklama" && git push
 Site 1-2 dakikada güncellenir.
 
 > ⚠️ **ÖNEMLİ:** Uygulama dosyaları değiştiğinde `sw.js` içindeki
-> `CACHE = "okuma-yildizi-v3"` sürümünü artırın (v4, v5...). Aksi hâlde çocuğun
+> `CACHE = "okuma-yildizi-v4"` sürümünü artırın (v5, v6...). Aksi hâlde çocuğun
 > cihazı eski sürümü önbellekten göstermeye devam eder. (`sw.js` eski önbellekleri
 > otomatik siler, ancak sürüm numarası artırılmalıdır.)

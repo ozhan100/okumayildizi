@@ -59,7 +59,6 @@ let kayitliGun = localStorage.getItem("okumaGun") || "";
 let gunlukYildiz = parseInt(localStorage.getItem("okumaGunYildiz") || "0", 10);
 let toplamOyku = parseInt(localStorage.getItem("okumaOyku") || "0", 10);
 let gunlukOyku = parseInt(localStorage.getItem("okumaGunOyku") || "0", 10);
-let paraSira = parseInt(localStorage.getItem("okumaParaSira") || "0", 10);
 
 if (kayitliGun !== bugunStr()) {
   kayitliGun = bugunStr();
@@ -69,6 +68,42 @@ if (kayitliGun !== bugunStr()) {
   localStorage.setItem("okumaGunYildiz", "0");
   localStorage.setItem("okumaGunOyku", "0");
 }
+
+// ---------- Öykü havuzu: sıra her açılışta karışık, öykü tekrar etmez ----------
+// Öyküler sabit bir sırayla (1,2,3...) değil, "okunmamış havuzdan rastgele çekme"
+// yöntemiyle gösterilir. Böylece uygulama ertesi gün açıldığında sıra farklı olur;
+// buna karşılık bir öykü, bütün öyküler okunana kadar tekrar karşımıza çıkmaz.
+// Havuz bitince otomatik olarak yeni bir tur başlar.
+function tamHavuz() {
+  return Array.from({ length: OYKULAR.length }, (_, i) => i);
+}
+function havuzOku() {
+  try {
+    const ham = localStorage.getItem("okumaHavuz");
+    if (!ham) return null;
+    const d = JSON.parse(ham);
+    if (Array.isArray(d) && d.length &&
+        d.every(n => Number.isInteger(n) && n >= 0 && n < OYKULAR.length)) return d;
+  } catch (e) { /* bozuk kayıt: aşağıda yeniden kurulur */ }
+  return null;
+}
+let havuz = havuzOku() || tamHavuz();
+let hedefIdx = -1;          // gösterilmekte olan öykünün numarası
+let yeniTurBasladi = false; // havuz bu öyküde yenilendi mi
+
+function havuzKaydet() {
+  try { localStorage.setItem("okumaHavuz", JSON.stringify(havuz)); } catch (e) { /* yok say */ }
+}
+
+// Havuzdan rastgele bir öykü çeker (her öykü yalnızca bir kez).
+function siradakiOykuIndeksi() {
+  if (!havuz.length) { havuz = tamHavuz(); yeniTurBasladi = true; }
+  const k = Math.floor(Math.random() * havuz.length);
+  return havuz.splice(k, 1)[0];
+}
+
+// Eski sürümden kalan sabit sayaç artık kullanılmıyor.
+try { localStorage.removeItem("okumaParaSira"); } catch (e) { /* yok say */ }
 
 const $ = (id) => document.getElementById(id);
 const screens = { start: $("screen-start"), mic: $("screen-mic") };
@@ -83,7 +118,6 @@ function guncelleYildiz() {
   localStorage.setItem("okumaYildiz", String(toplamYildiz));
   localStorage.setItem("okumaGunYildiz", String(gunlukYildiz));
   localStorage.setItem("okumaGun", kayitliGun);
-  localStorage.setItem("okumaParaSira", String(paraSira));
   localStorage.setItem("okumaOyku", String(toplamOyku));
   localStorage.setItem("okumaGunOyku", String(gunlukOyku));
 
@@ -92,6 +126,7 @@ function guncelleYildiz() {
   $("daily-mic").textContent = gunlukYildiz;
   $("bugun-oyku-start").textContent = gunlukOyku;
   $("toplam-oyku-start").textContent = toplamOyku;
+  $("kalan-oyku-start").textContent = havuz.length;
   $("daily-bar-start").style.width = Math.min(100, gunlukYildiz / GUNLUK_HEDEF * 100) + "%";
   $("daily-bar-mic").style.width = Math.min(100, gunlukYildiz / GUNLUK_HEDEF * 100) + "%";
 
@@ -186,10 +221,12 @@ function hizala(hedefN, duyulan) {
 
 function yeniOyku() {
   micDurdur(false);
-  const idx = paraSira % OYKULAR.length;
+  yeniTurBasladi = false;
+  const idx = siradakiOykuIndeksi();
+  hedefIdx = idx;
   hedefOyku = OYKULAR[idx];
   const band = zorlukBand(idx);
-  paraSira++;
+  havuzKaydet();
   hedefKelimeler = hedefOyku.split(/\s+/);
   finalMetin = "";
   sonTranskript = "";
@@ -205,7 +242,9 @@ function yeniOyku() {
   $("mic-transcript").textContent = "—";
   $("mic-score").textContent = `Doğruluk: — (${hedefKelimeler.length} kelime • en fazla ${izinHata(hedefKelimeler.length)} hata)`;
   $("mic-feedback").textContent = "🎤'ye bas ve öyküyü baştan sona oku. Son kelimeyi de okuyunca sonuç kesinleşir.";
-  $("mic-status").textContent = "Mikrofon kapalı.";
+  $("mic-status").textContent = yeniTurBasladi
+    ? `🎉 ${OYKULAR.length} öykünün hepsi okundu! Yeni tur başladı, sıra yeniden karıştırıldı.`
+    : "Mikrofon kapalı.";
   guncelleYildiz();
 }
 

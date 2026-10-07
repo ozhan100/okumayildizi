@@ -3,9 +3,19 @@ OKUMA YILDIZI - Telefona Kurulum
 Tek mod: Öykü Oku (mikrofon, 1000 kısa öykü, her biri 45-55 kelime). INTERNET İSTER.
 
 KURALLAR:
-- 1000 kısa öykü (her biri 5 cümle, ortalama 49 kelime). Sıra, ardışık öyküler
-  benzer olmasın diye çeşitlendirilmiştir.
+- 1000 kısa öykü (her biri 5 cümle, ortalama 49 kelime).
 - Zorluk göstergesi: ★☆☆ Kolay -> ★★☆ Orta -> ★★★ Zor (öykünün kendi metnine göre).
+
+ÖYKÜ SIRASI (karışık):
+- Öyküler sabit sırayla (1,2,3...) gelmez. Uygulama, okunmamış havuzdan RASTGELE
+  çeker; bu yüzden ertesi gün açtığınızda sıra farklı olur. Hep aynı öyküyle
+  başlama durumu olmaz.
+- Bir öykü, bütün öyküler okunana kadar TEKRAR karşımıza çıkmaz.
+- Okunan öyküler telefonda saklanır; uygulamayı kapatıp açsanız da kaldığınız
+  yerden devam eder, okuduğunuz öyküler bir daha gelmez.
+- 1000 öykünün hepsi bitince otomatik YENİ TUR başlar ve sıra yeniden karışır.
+- Başlangıç ekranındaki "🎲 Sıradaki tura kadar" sayacı bu turda kaç öykü
+  kaldığını gösterir.
 
 KELİME RENKLERİ:
   YEŞİL   = kelime tam doğru okundu
@@ -65,8 +75,8 @@ NOTLAR:
 - Öyküler oykuler.js dosyasındadır; değiştirmek için 1000_kisa_oyku.docx'i
   güncelleyip "python _uret.py" çalıştır (oykuler.js elle düzenlenmez).
 - Veriler telefonda saklanır: okumaYildiz, okumaGun, okumaGunYildiz, okumaOyku,
-  okumaGunOyku, okumaParaSira.
-- Uygulama güncellendiğinde sw.js içindeki CACHE sürümünü artır (v3 -> v4), yoksa
+  okumaGunOyku, okumaHavuz.
+- Uygulama güncellendiğinde sw.js içindeki CACHE sürümünü artır (v4 -> v5), yoksa
   telefon eski sürümü göstermeye devam eder.
 
 İyi okumalar! 📚⭐🎤
