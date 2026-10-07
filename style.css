@@ -68,10 +68,15 @@ h1 { margin: 8px 0 4px; font-size: 34px; color: #2c3e50; }
 .progress-text { text-align: center; color: #888; margin-top: 4px; font-size: 15px; }
 .score-display { font-size: 30px; font-weight: 800; margin: 12px 0 18px; }
 
-/* --- Paragraf + mikrofon modu --- */
-.para-card { min-height: 190px; }
+/* --- Öykü + mikrofon modu --- */
+/* Öyküler ~49 kelime olduğu için yazı ekrana sığacak şekilde ölçeklenir */
+.para-card { min-height: 190px; padding: 18px 14px; }
 #para-label { font-size: 16px; color: #999; margin-bottom: 10px; }
-#para-text { font-size: 24px; font-weight: 700; line-height: 1.7; }
+#para-text {
+    font-size: clamp(17px, 4.6vw, 22px);
+    font-weight: 700; line-height: 1.65;
+    text-align: left; width: 100%;
+}
 #para-text .w { padding: 2px 4px; border-radius: 8px; transition: background .2s; }
 #para-text .w-ok { background: #C8E6C9; color: #1B5E20; }
 #para-text .w-bad { background: #FFCDD2; color: #B71C1C; text-decoration: underline wavy #E53935; }
@@ -98,7 +103,7 @@ h1 { margin: 8px 0 4px; font-size: 34px; color: #2c3e50; }
 .flawless-line { text-align: center; font-size: 17px; font-weight: 800; background: #FFF8E1; border-radius: 12px; padding: 8px; margin-top: 8px; }
 
 /* --- Dolan yıldız --- */
-.yildiz-svg { width: 112px; height: 112px; display: block; margin: 8px auto 0; }
+.yildiz-svg { width: 92px; height: 92px; display: block; margin: 6px auto 0; }
 .yildiz-svg.kucuk { width: 84px; height: 84px; }
 .star-arm { fill: #E0E0E0; stroke: #BDBDBD; stroke-width: 2; stroke-linejoin: round; transition: fill .4s; }
 .star-arm.dolu { fill: #FFC107; stroke: #FF8F00; }

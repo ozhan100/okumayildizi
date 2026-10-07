@@ -1,60 +1,15 @@
-// Okuma Yıldızı - 2. Sınıf | Paragraf Modu (mikrofonla takip)
-// Kural: 10'da 10 (hepsi doğru) -> 1 yıldız. Günlük görev: 10 yıldız.
+// Okuma Yıldızı - 2. Sınıf | Kısa Öykü Okuma (mikrofonla takip)
+// Kaynak: 1000 kısa öykü (oykuler.js)
+// Kural: öyküyü en az %90 doğrulukla, sonuna kadar oku -> 1 yıldız. Günlük görev: 10 yıldız.
 // Mikrofon Chrome konuşma tanıma kullanır (internet ister).
 
 const GUNLUK_HEDEF = 10;
-const HATASIZ_HEDEF = 5; // her 5 hatasız (10'da 10) cümle = 1 yıldız
+const HATASIZ_HEDEF = 5;      // her 5 hatasız öykü = 1 yıldız
+const HEDEF_DOGRULUK = 0.90;  // yıldız için gereken en düşük doğruluk
 
-// ---------- 2. sınıf cümle havuzu (5000 cümle buradan üretilir) ----------
-const CUMLE_HAVUZU = [
-  // Sabah / günlük rutin
-  "Sabah uyandım.", "Elimi yüzümü yıkadım.", "Kahvaltıda süt içtim.",
-  "Dişlerimi fırçaladım.", "Çantamı hazırladım.", "Okula koştum.",
-  "Ayakkabılarımı giydim.", "Saçımı taradım.", "Kahvaltıda ekmek yedim.",
-  "Suyumu içtim.",
-  // Okul
-  "Okulda öğretmenim masal okudu.", "Hepimiz sessizce dinledik.", "Masal çok güzeldi.",
-  "Sınıfta resim yaptık.", "Defterime yazı yazdım.", "Teneffüste oynadık.",
-  "Öğretmenimi seviyorum.", "Kitabımı okudum.", "Kalemim kırmızı.", "Sıram temiz.",
-  // Aile / ev
-  "Annem kek yaptı.", "Babam top aldı.", "Kokusu eve yayıldı.",
-  "Hep birlikte yedik.", "Kardeşimle oynadım.", "Evimiz sıcak.",
-  "Annem masal anlattı.", "Babamla parka gittik.", "Odamı topladım.", "Ailemle güldük.",
-  // Hayvanlar
-  "Kedim Pamuk çok tatlı.", "Onunla bahçede oynadım.", "Sütünü içince mırıldandı.",
-  "Kuş gökte uçar.", "Balık suda yüzer.", "Köpeğim topu getirdi.",
-  "Kelebek çiçeğe kondu.", "Arılar çiçeklere kondu.", "Tavşan havuç yedi.", "Civcivler koşuyor.",
-  "Kuşlar ötüyor.", "Kedi süt içti.",
-  // Doğa
-  "Elma ağacı çiçek açmış.", "Babam elma topladı.", "Deniz mavi ve temiz.",
-  "Dalgalar kıyıya vuruyor.", "Martılar uçuyor.", "Yıldızlar parlıyor.",
-  "Güneş açtı.", "Çiçekler kokuyor.", "Ağaçlar yeşerdi.", "Bulutlar geziyor.",
-  // Oyun / park
-  "Parkta top oynadık.", "Arkadaşım topu attı.", "Ben de yakaladım.",
-  "Salıncakta sallandım.", "Kaydıraktan kaydım.", "Arkadaşımla oynadım.",
-  "Top havaya uçtu.", "Hepimiz güldük.", "Oyunu ben kazandım.", "Tekrar oynadık.",
-  // Yemek
-  "Elma ağaçta büyür.", "Armut tatlı.", "Ekmek sıcak.", "Süt sağlıklı.",
-  "Kek çok lezzetli.", "Portakal sulu.", "Çorba sıcak.", "Peynir beyaz.",
-  // Mevsim / hava
-  "Bugün hava güneşli.", "Kış geldi.", "Kar yağdı.", "Kardan adam yaptık.",
-  "Yağmur yağıyor.", "Gökkuşağı çıktı.", "Rüzgar esiyor.", "Sonbaharda yapraklar düştü.",
-  // Taşıt / gezi
-  "Tren istasyona geldi.", "Düdüğünü çaldı.", "Yolcular trene bindi.",
-  "Tren hızlı gidiyor.", "Uçak gökte uçuyor.", "Arabayla gezdik.",
-  "Vapurda martılara baktık.", "Bisikletime bindim.",
-  // Arkadaşlık / duygular
-  "Arkadaşımı seviyorum.", "Birlikte şarkı söyledik.", "Paylaşmak güzel.",
-  "Yardıma koştum.", "Teşekkür ettim.", "Özür diledim.",
-  "Mutlu oldum.", "Gurur duydum.", "Heyecanlandım.", "Sevinçten zıpladım.",
-  // Kısa ek cümleler
-  "Bebek uyudu.", "Pencere açık.", "Kapı kapalı.", "Lamba yanıyor.",
-  "Saat çalışıyor.", "Deve yürüyor.", "Tilki koşuyor.", "Kuzular otluyor."
-];
-
-// ---------- Cümle zorluğu: harf sayısı + uzun kelime cezası (2. sınıf Türkçesi) ----------
-function cumleZorluk(c) {
-  const temiz = c.replace(/[.,!?;:…"“”'()]/g, "");
+// ---------- Öykü zorluğu: harf sayısı + uzun kelime cezası (2. sınıf Türkçesi) ----------
+function metinZorluk(m) {
+  const temiz = m.replace(/[.,!?;:…"“”'()]/g, "");
   const kelimeler = temiz.split(/\s+/).filter(Boolean);
   let skor = temiz.replace(/\s/g, "").length;
   kelimeler.forEach(w => {
@@ -65,37 +20,23 @@ function cumleZorluk(c) {
   return skor;
 }
 
-// ---------- 5000 cümle üret (her biri 3 farklı kısa cümleden ~10 kelime), kolaydan zora sıralı ----------
-function karistir(dizi) {
-  const a = [...dizi];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
+// Öyküler hazır geldiği için zorlukları bir kez hesaplanır (sıralama değişmez).
+const OYKU_ZORLUK = OYKULAR.map(metinZorluk);
+
+// Zorluk bandı: öykülerin kendi metnine göre (konuma göre değil)
+const _SIRALI = [...OYKU_ZORLUK].sort((a, b) => a - b);
+const _ESIK_ORTA = _SIRALI[Math.floor(_SIRALI.length * 0.4)];
+const _ESIK_ZOR = _SIRALI[Math.floor(_SIRALI.length * 0.75)];
+function zorlukBand(idx) {
+  const s = OYKU_ZORLUK[idx];
+  if (s <= _ESIK_ORTA) return { yildiz: "★☆☆", ad: "Kolay" };
+  if (s <= _ESIK_ZOR) return { yildiz: "★★☆", ad: "Orta" };
+  return { yildiz: "★★★", ad: "Zor" };
 }
 
-const _URETIM = (() => {
-  const set = new Map(); // metin -> zorluk (tekrarları ele)
-  let guard = 0;
-  while (set.size < 5000 && guard < 90000) {
-    guard++;
-    const uc = karistir(CUMLE_HAVUZU).slice(0, 3);
-    const metin = uc.join(" ");
-    if (!set.has(metin)) set.set(metin, uc.reduce((t, c) => t + cumleZorluk(c), 0));
-  }
-  return [...set.entries()]
-    .sort((a, b) => a[1] - b[1])
-    .map(([metin, zorluk]) => ({ metin, zorluk }));
-})();
-const PARAGRAFLAR = _URETIM.map(o => o.metin);
-
-// listedeki konuma göre zorluk bandı (başlar kolay, azar azar zorlaşır)
-function zorlukBand(idx) {
-  const oran = idx / PARAGRAFLAR.length;
-  if (oran < 0.4) return { yildiz: "★☆☆", ad: "Kolay" };
-  if (oran < 0.75) return { yildiz: "★★☆", ad: "Orta" };
-  return { yildiz: "★★★", ad: "Zor" };
+// %90 doğruluk için izin verilen en fazla hata sayısı
+function izinHata(uzunluk) {
+  return uzunluk - Math.ceil(uzunluk * HEDEF_DOGRULUK);
 }
 
 // ---------- Günlük + toplam yıldız ----------
@@ -112,9 +53,6 @@ let gunlukYildiz = parseInt(localStorage.getItem("okumaGunYildiz") || "0", 10);
 let gunlukHatasiz = parseInt(localStorage.getItem("okumaGunHatasiz") || "0", 10);
 let toplamHatasiz = parseInt(localStorage.getItem("okumaHatasiz") || "0", 10);
 let paraSira = parseInt(localStorage.getItem("okumaParaSira") || "0", 10);
-// Uyarlanabilir zorluk: üst üste başarı/kolaylaştırma sayaçları (yumuşak geçiş için)
-let ustUsteBasari = parseInt(localStorage.getItem("okumaSeriBasari") || "0", 10);
-let ustUsteZorlanma = parseInt(localStorage.getItem("okumaSeriZor") || "0", 10);
 
 if (kayitliGun !== bugunStr()) {
   kayitliGun = bugunStr();
@@ -134,7 +72,7 @@ function show(name) {
   window.scrollTo(0, 0);
 }
 
-// 5 kollu yıldız: her hatasız cümlede bir kol altın olur, 5'te yıldız tamamlanır
+// 5 kollu yıldız: her hatasız öyküde bir kol altın olur, 5'te yıldız tamamlanır
 function yildizDoldur(svg, dolu) {
   if (!svg || typeof svg.querySelectorAll !== "function") return;
   let kollar = svg.querySelectorAll("polygon.star-arm");
@@ -176,8 +114,6 @@ function guncelleYildiz() {
   localStorage.setItem("okumaGunYildiz", String(gunlukYildiz));
   localStorage.setItem("okumaGun", kayitliGun);
   localStorage.setItem("okumaParaSira", String(paraSira));
-  localStorage.setItem("okumaSeriBasari", String(ustUsteBasari));
-  localStorage.setItem("okumaSeriZor", String(ustUsteZorlanma));
   localStorage.setItem("okumaGunHatasiz", String(gunlukHatasiz));
   localStorage.setItem("okumaHatasiz", String(toplamHatasiz));
 
@@ -229,16 +165,16 @@ function seslendir(metin) {
   }
 }
 
-// ---------- Paragraf + mikrofon takibi ----------
-let hedefParagraf = "";
+// ---------- Öykü + mikrofon takibi ----------
+let hedefOyku = "";
 let hedefKelimeler = [];
 let recognition = null;
 let dinleniyor = false;
 let finalMetin = "";
-let paragrafYildizVerildi = false;
+let oykuYildizVerildi = false;
 let sonTranskript = "";
 let otoGecisTimer = null;
-const OTO_GECIS_SURESI = 4000; // ms: 10/10 olunca sonucu gösterip otomatik geç
+const OTO_GECIS_SURESI = 4000; // ms: hedef tutulunca sonucu gösterip otomatik geç
 
 function normalizeKelime(k) {
   return k.toLocaleLowerCase("tr-TR")
@@ -269,22 +205,24 @@ function kelimeEslesme(hedef, duyulan) {
   return levenshtein(hedef, duyulan) <= tolerans;
 }
 
-function yeniParagraf() {
+function yeniOyku() {
   micDurdur(true);
-  hedefParagraf = PARAGRAFLAR[paraSira % PARAGRAFLAR.length];
-  const numara = (paraSira % PARAGRAFLAR.length) + 1;
+  const idx = paraSira % OYKULAR.length;
+  hedefOyku = OYKULAR[idx];
+  const band = zorlukBand(idx);
   paraSira++;
-  hedefKelimeler = hedefParagraf.split(/\s+/);
+  hedefKelimeler = hedefOyku.split(/\s+/);
   finalMetin = "";
   sonTranskript = "";
-  paragrafYildizVerildi = false;
+  oykuYildizVerildi = false;
   $("para-text").innerHTML = hedefKelimeler
     .map((w, i) => `<span class="w" id="pw-${i}">${escapeHtml(w)}</span>`)
     .join(" ");
-  $("para-label").textContent = `Cümle #${numara} / ${PARAGRAFLAR.length} • ${zorlukBand(paraSira % PARAGRAFLAR.length).yildiz} ${zorlukBand(paraSira % PARAGRAFLAR.length).ad} 👇 Yüksek sesle oku`;
+  $("para-label").textContent =
+    `Öykü #${idx + 1} / ${OYKULAR.length} • ${hedefKelimeler.length} kelime • ${band.yildiz} ${band.ad} 👇 Yüksek sesle oku`;
   $("mic-transcript").textContent = "—";
-  $("mic-score").textContent = `Doğruluk: — (${hedefKelimeler.length} kelime • 5 hatasız = 1⭐)`;
-  $("mic-feedback").textContent = "🎤'ye bas ve cümleyi oku. Bitince Durdur'a bas, sonucu gör. Hazır olunca ⏭️ Atla ile yeni cümleye geç.";
+  $("mic-score").textContent = `Doğruluk: — (${hedefKelimeler.length} kelime • hedef en az %90)`;
+  $("mic-feedback").textContent = "🎤'ye bas ve öyküyü baştan sona oku. Bitince Durdur'a bas, sonucu gör.";
   guncelleYildiz();
 }
 
@@ -292,15 +230,16 @@ function yeniParagraf() {
 function degerlendir(duyulanMetin, final = false) {
   const duyulan = normalizeMetin(duyulanMetin).split(" ").filter(Boolean);
   const hedefN = hedefKelimeler.map(normalizeKelime);
-  let j = 0, dogru = 0;
-  const sonuc = new Array(hedefN.length).fill(false);
+  const izin = izinHata(hedefN.length);
+  let j = 0, dogru = 0, sonEslesme = -1;
+  const eslesmeler = new Array(hedefN.length).fill(false);
 
   for (let i = 0; i < hedefN.length; i++) {
     let bulundu = -1;
     for (let k = j; k < Math.min(j + 4, duyulan.length); k++) {
       if (kelimeEslesme(hedefN[i], duyulan[k])) { bulundu = k; break; }
     }
-    if (bulundu >= 0) { sonuc[i] = true; dogru++; j = bulundu + 1; }
+    if (bulundu >= 0) { eslesmeler[i] = true; dogru++; j = bulundu + 1; sonEslesme = i; }
   }
 
   let ilkYanlis = -1;
@@ -309,7 +248,7 @@ function degerlendir(duyulanMetin, final = false) {
     if (!el) return;
     el.classList.remove("w-ok", "w-bad", "w-next");
     if (!duyulan.length) return;
-    if (sonuc[i]) el.classList.add("w-ok");
+    if (eslesmeler[i]) el.classList.add("w-ok");
     else { el.classList.add("w-bad"); if (ilkYanlis < 0) ilkYanlis = i; }
   });
   if (ilkYanlis >= 0) {
@@ -318,99 +257,68 @@ function degerlendir(duyulanMetin, final = false) {
   }
 
   const yuzde = hedefN.length ? Math.round(dogru / hedefN.length * 100) : 0;
-  $("mic-score").textContent = `Doğruluk: %${yuzde} (${dogru}/${hedefN.length} kelime)`;
+  $("mic-score").textContent = `Doğruluk: %${yuzde} (${dogru}/${hedefN.length} kelime • en fazla ${izin} hata)`;
 
-  const tamPuan = dogru === hedefN.length && hedefN.length > 0;
+  // Yıldız için: yeterli doğruluk VE öykünün sonuna kadar okunmuş olması.
+  // (Yoksa baştan birkaç kelimeyi okuyup bırakmak %90'ı tuttururdu.)
+  const yeterliDogru = dogru >= hedefN.length - izin;
+  const sonaUlasildi = sonEslesme >= hedefN.length - 1 - izin;
+  const hedefTutuldu = yeterliDogru && sonaUlasildi;
+  const sonucBilgi = { yuzde, dogru, toplam: hedefN.length, izin, hedefTutuldu, sonaUlasildi };
 
   if (!duyulan.length) {
     $("mic-feedback").textContent = "Henüz ses duyamadım, biraz daha yüksek sesle oku. 🎤";
-  } else if (tamPuan) {
-    $("mic-feedback").textContent = "🌟 10'da 10! Mükemmel okudun!";
-    if (final && !paragrafYildizVerildi) {
-      paragrafYildizVerildi = true;
+  } else if (hedefTutuldu) {
+    if (final && !oykuYildizVerildi) {
+      oykuYildizVerildi = true;
       gunlukHatasiz++;
       toplamHatasiz++;
-      // Uyarlanabilir zorluk: üst üste her 5 hatasızda bir tık ileri sar (fazla değil: +2)
-      ustUsteBasari++;
-      ustUsteZorlanma = 0;
-      let ekstra = "";
-      if (ustUsteBasari % 5 === 0) {
-        paraSira += 2;
-        ekstra = " 🚀 Üst üste başarı! Cümleler bir tık zorlaşıyor.";
-      }
       const yildizHakki = (gunlukHatasiz % HATASIZ_HEDEF === 0);
       if (yildizHakki) { yildizKazan(); yildizParlat(); }
       guncelleYildiz();
       if (gunlukYildiz === GUNLUK_HEDEF && yildizHakki) {
-        // yildizKazan() kutlama mesajını yazdı, geçiş notunu ekle
-        $("mic-feedback").textContent += " Hazır olunca ⏭️ Atla'ya bas." + ekstra;
+        $("mic-feedback").textContent += " Hazır olunca ⏭️ Atla'ya bas.";
       } else if (yildizHakki) {
         const hedef = gunlukYildiz > GUNLUK_HEDEF ? "Bonus ⭐ kazandın!" : `⭐ kazandın! (${gunlukYildiz}/${GUNLUK_HEDEF})`;
-        $("mic-feedback").textContent = `🌟 10'da 10! ${hedef} Hazır olunca ⏭️ Atla'ya bas.${ekstra}`;
+        $("mic-feedback").textContent = `🌟 %${yuzde} doğru! ${hedef} Hazır olunca ⏭️ Atla'ya bas.`;
       } else {
         const yapilan = gunlukHatasiz % HATASIZ_HEDEF;
-        $("mic-feedback").textContent = `🌟 10'da 10! Hatasız: ${yapilan}/${HATASIZ_HEDEF} — ${HATASIZ_HEDEF - yapilan} tane daha yaparsan ⭐ gelir! Hazır olunca ⏭️ Atla'ya bas.${ekstra}`;
+        $("mic-feedback").textContent = `🌟 %${yuzde} doğru! Hatasız: ${yapilan}/${HATASIZ_HEDEF} — ${HATASIZ_HEDEF - yapilan} öykü daha okursan ⭐ gelir! Hazır olunca ⏭️ Atla'ya bas.`;
       }
     } else if (!final) {
-      $("mic-feedback").textContent = "🌟 Hepsi yeşil görünüyor! Durdur'a bas, sonucu kesinleştir.";
+      $("mic-feedback").textContent = "🌟 Hedefi tuttun! Durdur'a bas, sonucu kesinleştir.";
     }
+  } else if (yeterliDogru && !sonaUlasildi) {
+    $("mic-feedback").textContent = `👍 ${dogru}/${hedefN.length} doğru. Ama öykü bitmemiş — sonuna kadar okumalısın!`;
   } else if (yuzde >= 60) {
-    if (final) {
-      // İdare eder: seri sıfırlanmaz ama artmaz, zorlanma da sayılmaz (yumuşak)
-      ustUsteZorlanma = 0;
-      guncelleYildiz();
-    }
     $("mic-feedback").textContent = final
-      ? `👍 ${dogru}/${hedefN.length} doğru. Yıldız için 10'da 10 gerek. Hazır olunca ⏭️ Atla'ya bas.`
-      : `👍 ${dogru}/${hedefN.length} doğru. Kırmızılara dikkat, yıldız için 10'da 10 gerek!`;
+      ? `👍 ${dogru}/${hedefN.length} doğru (%${yuzde}). Yıldız için en az %90 gerek. Hazır olunca ⏭️ Atla'ya bas.`
+      : `👍 ${dogru}/${hedefN.length} doğru. Kırmızılara dikkat, yıldız için en az %90 gerek!`;
   } else if (yuzde >= 30) {
-    if (final) {
-      // Üst üste 2 zorlanmada bir tık geri al (fazla değil: -2, en az 0)
-      ustUsteBasari = 0;
-      ustUsteZorlanma++;
-      let kolay = "";
-      if (ustUsteZorlanma >= 2) {
-        paraSira = Math.max(0, paraSira - 2);
-        ustUsteZorlanma = 0;
-        kolay = " 🐢 Merak etme, sıradaki cümle bir tık kolaylaşıyor.";
-      }
-      guncelleYildiz();
-      $("mic-feedback").textContent = `💪 ${dogru}/${hedefN.length} doğru. Sonuç burada duruyor. Hazır olunca ⏭️ Atla'ya bas.${kolay}`;
-    } else {
-      $("mic-feedback").textContent = "💪 Devam et, kırmızılar düzelecek.";
-    }
+    $("mic-feedback").textContent = final
+      ? `💪 ${dogru}/${hedefN.length} doğru. Sonuç burada duruyor. Hazır olunca ⏭️ Atla'ya bas.`
+      : "💪 Devam et, kırmızılar düzelecek.";
   } else {
-    if (final) {
-      ustUsteBasari = 0;
-      ustUsteZorlanma++;
-      let kolay = "";
-      if (ustUsteZorlanma >= 2) {
-        paraSira = Math.max(0, paraSira - 2);
-        ustUsteZorlanma = 0;
-        kolay = " 🐢 Merak etme, sıradaki cümle bir tık kolaylaşıyor.";
-      }
-      guncelleYildiz();
-      $("mic-feedback").textContent = `🔊 ${dogru}/${hedefN.length} doğru. Örnek ile dinleyebilirsin. Hazır olunca ⏭️ Atla'ya bas.${kolay}`;
-    } else {
-      $("mic-feedback").textContent = "🔊 Örnek düğmesiyle dinle, sonra tekrar dene.";
-    }
+    $("mic-feedback").textContent = final
+      ? `🔊 ${dogru}/${hedefN.length} doğru. Örnek ile dinleyebilirsin. Hazır olunca ⏭️ Atla'ya bas.`
+      : "🔊 Örnek düğmesiyle dinle, sonra tekrar dene.";
   }
-  return yuzde;
+  return sonucBilgi;
 }
 
 function tanimaDestegiVarMi() {
   return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
 }
 
-// 10/10 olunca: sonucu birkaç saniye göster, sonra otomatik yeni cümleye geç
+// Hedef tutulunca: sonucu birkaç saniye göster, sonra otomatik yeni öyküye geç
 function otoGecisPlanla() {
   let kalan = Math.ceil(OTO_GECIS_SURESI / 1000);
   $("mic-feedback").textContent += " ⏭️ Birazdan otomatik geçecek.";
-  $("mic-status").textContent = `🌟 Hepsi doğru! ${kalan} sn sonra yeni cümle geliyor...`;
+  $("mic-status").textContent = `🌟 Hedefi tuttun! ${kalan} sn sonra yeni öykü geliyor...`;
   const adim = setInterval(() => {
     kalan--;
     if (kalan > 0 && otoGecisTimer) {
-      $("mic-status").textContent = `🌟 Hepsi doğru! ${kalan} sn sonra yeni cümle geliyor...`;
+      $("mic-status").textContent = `🌟 Hedefi tuttun! ${kalan} sn sonra yeni öykü geliyor...`;
     } else {
       clearInterval(adim);
     }
@@ -419,9 +327,8 @@ function otoGecisPlanla() {
     clearInterval(adim);
     otoGecisTimer = null;
     micDurdur(true);
-    // Sonuç zaten kesinleşti (canlı 10/10'da sayıldı), sadece yeni cümleye geç
-    yeniParagraf();
-    $("mic-status").textContent = "Yeni cümle hazır! 🎤 Başla'ya bas.";
+    yeniOyku();
+    $("mic-status").textContent = "Yeni öykü hazır! 🎤 Başla'ya bas.";
   }, OTO_GECIS_SURESI);
 }
 
@@ -449,10 +356,10 @@ function micBaslat() {
       sonTranskript = toplam;
       $("mic-transcript").textContent = toplam || "Dinliyorum...";
       if (otoGecisTimer) return; // sonuç kesinleşti, geri sayım bitene kadar tabloyu dondur
-      const yuzde = degerlendir(toplam, false);
-      if (toplam && yuzde === 100 && dinleniyor && !paragrafYildizVerildi) {
-        degerlendir(toplam, true); // hatasız sayacı + yıldız hemen işlensin, sonuç görünsün
-        otoGecisPlanla();          // birkaç saniye sonra otomatik yeni cümle
+      const bilgi = degerlendir(toplam, false);
+      if (toplam && bilgi.hedefTutuldu && dinleniyor && !oykuYildizVerildi) {
+        degerlendir(toplam, true);        // yıldızı/sayacı hemen işle
+        if (oykuYildizVerildi) otoGecisPlanla(); // birkaç saniye sonra otomatik yeni öykü
       }
     };
     recognition.onerror = (e) => {
@@ -473,12 +380,12 @@ function micBaslat() {
   }
   finalMetin = "";
   sonTranskript = "";
-  paragrafYildizVerildi = false;
+  oykuYildizVerildi = false;
   if (otoGecisTimer) { clearTimeout(otoGecisTimer); otoGecisTimer = null; }
   dinleniyor = true;
   try {
     recognition.start();
-    $("mic-status").textContent = "🔴 Dinliyorum... Cümleyi oku!";
+    $("mic-status").textContent = "🔴 Dinliyorum... Öyküyü baştan sona oku!";
     const btn = $("btn-mic");
     btn.classList.add("listening");
     btn.innerHTML = "⏹️<small>Durdur</small>";
@@ -497,8 +404,8 @@ function micDurdur(sessiz) {
   if (!sessiz) {
     $("mic-status").textContent = "Mikrofon kapalı. Sonuç yukarıda duruyor.";
     const metin = (finalMetin.trim() || sonTranskript.trim());
-    if (metin && okumaVardi && !paragrafYildizVerildi) degerlendir(metin, true);
-    else if (okumaVardi && !paragrafYildizVerildi) $("mic-feedback").textContent = "🔇 Ses duyamadım. Tekrar 🎤 Başla'ya bas ve oku.";
+    if (metin && okumaVardi && !oykuYildizVerildi) degerlendir(metin, true);
+    else if (okumaVardi && !oykuYildizVerildi) $("mic-feedback").textContent = "🔇 Ses duyamadım. Tekrar 🎤 Başla'ya bas ve oku.";
   }
 }
 
@@ -507,17 +414,17 @@ $("btn-start-mic").onclick = () => {
   try { speechSynthesis.cancel(); } catch(e){}
   show("mic");
   guncelleYildiz();
-  if (!hedefParagraf) yeniParagraf();
+  if (!hedefOyku) yeniOyku();
 };
 $("btn-mic-home").onclick = () => { micDurdur(true); show("start"); guncelleYildiz(); };
-$("btn-new-para").onclick = () => yeniParagraf();
-$("btn-listen-para").onclick = () => { if (hedefParagraf) seslendir(hedefParagraf); };
+$("btn-new-para").onclick = () => yeniOyku();
+$("btn-listen-para").onclick = () => { if (hedefOyku) seslendir(hedefOyku); };
 $("btn-mic").onclick = () => { dinleniyor ? micDurdur(false) : micBaslat(); };
 
-// PWA service worker (offline - paragraflar gömülü olduğu için liste offline çalışır)
+// PWA service worker (offline - öyküler gömülü olduğu için liste offline çalışır)
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   navigator.serviceWorker.register("sw.js").catch(() => {});
 }
 
-$("para-count-start").textContent = PARAGRAFLAR.length;
+$("para-count-start").textContent = OYKULAR.length;
 guncelleYildiz();

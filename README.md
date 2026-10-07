@@ -1,8 +1,8 @@
 # Okuma Yıldızı 📚⭐
 
-2. sınıf öğrencileri için **cümle okuma antrenmanı** uygulaması. Çocuk cümleyi
-yüksek sesle okur, mikrofon dinler, kelimeler doğru/yanlış olarak canlı boyanır.
-5 hatasız cümle = 1 yıldız.
+2. sınıf öğrencileri için **kısa öykü okuma antrenmanı**. Çocuk öyküyü yüksek sesle
+okur, mikrofon dinler, kelimeler doğru/yanlış olarak canlı boyanır.
+**5 hatasız öykü = 1 yıldız.**
 
 ## Canlı adres
 
@@ -10,27 +10,40 @@ yüksek sesle okur, mikrofon dinler, kelimeler doğru/yanlış olarak canlı boy
 
 ## Nasıl çalışır
 
-- **Tek mod:** Cümle Oku — mikrofonla okuma (Chrome, internet ister).
-- **5000 cümle:** 104 kısa cümleden üretilen 5000 benzersiz 10 kelimelik cümle,
-  kolaydan zora sıralı (★☆☆ / ★★☆ / ★★★).
-- **Yıldız kuralı:** 10 kelimenin tamamı yeşil (10'da 10) olan her 5 cümle = 1 yıldız.
-- **Günlük görev:** 10 yıldız = günde 50 hatasız cümle. Günlük sayaçlar gece yarısı
+- **1000 kısa öykü:** Her öykü 45-55 kelime (ortalama 49), 5 cümle.
+- **Yıldız kuralı:** Öyküyü **sonuna kadar** ve **en az %90 doğrulukla** oku.
+  Bu, öykü uzunluğuna göre **en fazla 4-5 hata** demektir (ekranda tam sayı yazar).
+- **Yıldız kazanma:** Hedefi tutan her **5 öykü = 1 yıldız**.
+- **Günlük görev:** 10 yıldız = günde 50 öykü. Günlük sayaçlar gece yarısı
   sıfırlanır, toplamlar korunur.
-- **Uyarlanır zorluk:** Üst üste 5 hatasızda liste 2 adım zorlaşır; üst üste 2 kez
-  %60 altı doğrulukta 2 adım kolaylaşır.
-- **Otomatik geçiş:** 10'da 10 olunca sonuç 4 saniye gösterilir, sonra yeni cümle gelir.
+- **5 kollu yıldız:** Her hatasız öyküde bir kol altın olur, 5'te yıldız parlar.
+- **Otomatik geçiş:** Hedef tutulunca sonuç 4 saniye gösterilir, sonra yeni öykü gelir.
   "Durdur" ile otomatik geçiş iptal edilir, "⏭️ Atla" ile ilerlenir.
+- **Zorluk göstergesi:** ★☆☆ / ★★☆ / ★★★ — öykünün kendi metnine göre hesaplanır
+  (konuma göre değil).
+
+### Öykü sırası hakkında
+
+Kaynak belgedeki 1000 öykü, 10 şablon cümlenin kombinasyonudur: belgedeki sırayla
+**100 öykü boyunca ilk iki cümle birebir aynıdır**. Bu tekrarı önlemek için öyküler
+`_uret.py` tarafından yeniden sıralanır: **ardışık iki öykü asla aynı şablon
+cümlelerini paylaşmaz** (999 ardışık çiftin 0'ında ortak şablon var). Böylece çocuk
+her öyküde farklı bir metinle karşılaşır.
 
 ## Dosyalar
 
 | Dosya | Görev |
 |---|---|
-| `index.html` | Arayüz iskeleti (başlangıç + mikrofon ekranı) |
-| `app.js` | Cümle üretimi, konuşma tanıma, yıldız/zorluk mantığı |
+| `index.html` | Arayüz iskeleti (başlangıç + öykü ekranı) |
+| `oykuler.js` | **1000 öykünün verisi** (üretilen dosya) |
+| `app.js` | Öykü akışı, konuşma tanıma, yıldız/durum mantığı |
 | `style.css` | Görsel tasarım, animasyonlar |
 | `manifest.json` | PWA tanımı (ana ekrana ekleme) |
 | `sw.js` | Service worker — çevrimdışı önbellek |
 | `icon.svg` | Uygulama simgesi |
+| `1000_kisa_oyku.docx` | **Kaynak belge** (1000 öykü) |
+| `_uret.py` | docx → `oykuler.js` üreteci + sıralama |
+| `_test.js` | Değerlendirme mantığı testi (Node) |
 
 ## Kurulum (telefon)
 
@@ -46,10 +59,40 @@ yüksek sesle okur, mikrofon dinler, kelimeler doğru/yanlış olarak canlı boy
 
 Tüm ilerleme cihazda `localStorage` içinde tutulur, sunucuya gönderilmez:
 `okumaYildiz`, `okumaGun`, `okumaGunYildiz`, `okumaGunHatasiz`, `okumaHatasiz`,
-`okumaParaSira`, `okumaSeriBasari`, `okumaSeriZor`.
+`okumaParaSira`.
 
-## Geliştirme notu
+## Geliştirme
 
-Yeni cümle eklemek için `app.js` içindeki `CUMLE_HAVUZU` listesine ekleyin.
-Uygulama güncellendiğinde `sw.js` içindeki `CACHE` sürümünü artırın
-(örn. `okuma-yildizi-v2`), aksi hâlde cihazlar eski sürümü önbellekten gösterir.
+### Öyküleri güncelleme
+
+`1000_kisa_oyku.docx` değişirse `oykuler.js`'i yeniden üretin:
+
+```bash
+python _uret.py
+```
+
+Üreteç şunları yapar: docx'i okur, 1000 öyküyü doğrular (numara boşluğu/tekrar
+kontrolü), çeşitlendirilmiş sırayı kurar, `oykuler.js`'i yazar ve kalite raporu basar.
+`oykuler.js` elle düzenlenmemelidir.
+
+### Mantık testi
+
+```bash
+node _test.js
+```
+
+Yıldız kuralını doğrular: %90 sınırı, izin verilen hata sayısı, "sonuna kadar okuma"
+koruması (erken bırakmada yıldız verilmemesi).
+
+### Yayına alma
+
+```bash
+git add -A && git commit -m "aciklama" && git push
+```
+
+Site 1-2 dakikada güncellenir.
+
+> ⚠️ **ÖNEMLİ:** Uygulama dosyaları değiştiğinde `sw.js` içindeki
+> `CACHE = "okuma-yildizi-v2"` sürümünü artırın (v3, v4...). Aksi hâlde çocuğun
+> cihazı eski sürümü önbellekten göstermeye devam eder. (`sw.js` eski önbellekleri
+> otomatik siler, ancak sürüm numarası artırılmalıdır.)

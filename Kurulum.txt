@@ -1,18 +1,24 @@
 OKUMA YILDIZI - Telefona Kurulum
 ==============================
-Tek mod: Cümle Oku (mikrofon, ~10 kelimelik 5000 cümle). INTERNET İSTER.
+Tek mod: Öykü Oku (mikrofon, 1000 kısa öykü, her biri 45-55 kelime). INTERNET İSTER.
 
 KURALLAR:
-- 5000 cümle (104 kısa cümleden 5000 benzersiz 10 kelimelik cümle üretilir, kolaydan zora sıralı).
-- Zorluk göstergesi: ★☆☆ Kolay -> ★★☆ Orta -> ★★★ Zor (cümle başında yazar).
-- Yıldız kuralı: her 5 hatasız (10'da 10) cümle = 1 yıldız. Sayaç ekranda "Hatasız: X/5" yazar.
-- Günlük görev: 10 yıldız = günde 50 hatasız cümle. Hatasız ve yıldız sayaçları gece yarısı sıfırlanır, toplamlar durur.
-- 5 kollu bir yıldız: her hatasız cümlede bir kol altın olur, 5'te yıldız tamamen parlak olur. Yıldız kazandığında şıklıkla parlar.
-- Başarılı okudukça bir tık zorlaşır: üst üste her 5 hatasızda liste 2 adım ileri sarar (yumuşak).
-- Zorlanınca bir tık kolaylaşır: üst üste 2 kez %60 altı olursa 2 adım geri alınır (en az başa kadar).
-- Yıldız için 10'da 10 şart: cümledeki TÜM kelimeler yeşil olmalı.
-- Otomatik geçiş: 10'da 10 olunca sonucu 4 saniye gösterir, sonra kendisi yeni cümleye geçer.
-- Manuel Durdur: çocuk Durdur'a basarsa otomatik geçiş iptal, cümle ekranda kalır, ⏭️ Atla ile geçer.
+- 1000 kısa öykü (her biri 5 cümle, ortalama 49 kelime). Sıra, ardışık öyküler
+  benzer olmasın diye çeşitlendirilmiştir.
+- Zorluk göstergesi: ★☆☆ Kolay -> ★★☆ Orta -> ★★★ Zor (öykünün kendi metnine göre).
+- Yıldız kuralı: öyküyü SONUNA KADAR ve EN AZ %90 doğrulukla oku. Bu, öykü
+  uzunluğuna göre en fazla 4-5 hata demektir (ekranda tam sayı yazar).
+- Her 5 hatasız öykü = 1 yıldız. Sayaç ekranda "Hatasız: X/5" yazar.
+- Günlük görev: 10 yıldız = günde 50 hatasız öykü. Hatasız ve yıldız sayaçları gece
+  yarısı sıfırlanır, toplamlar durur.
+- 5 kollu bir yıldız: her hatasız öyküde bir kol altın olur, 5'te yıldız tamamen
+  parlak olur. Yıldız kazandığında şıklıkla parlar.
+- Otomatik geçiş: hedef tutulunca sonucu 4 saniye gösterir, sonra kendisi yeni
+  öyküye geçer.
+- Manuel Durdur: çocuk Durdur'a basarsa otomatik geçiş iptal, öykü ekranda kalır,
+  ⏭️ Atla ile geçer.
+- ÖNEMLİ: Yıldız için öykünün SONUNU da okumak şart. Baştan birkaç kelimeyi okuyup
+  bırakmak yıldız kazandırmaz.
 
 KURULUM - EN KOLAY YOL (internet sitesi, önerilen):
 1. Telefonda Chrome'a yaz:  https://ozhan100.github.io/okumayildizi/
@@ -34,15 +40,20 @@ KURULUM - Wi-Fi ile (bilgisayardan, yedek yöntem):
 NOT: Mikrofon file:// ile ÇALIŞMAZ, yukarıdaki iki yöntemden birini kullan.
 
 KULLANIM:
-1. Okumaya Başla -> Cümle #X / 5000 gelir.
+1. Okumaya Başla -> Öykü #X / 1000 gelir (kaç kelime olduğu da yazar).
 2. 🔊 Örnek -> telefon doğru okuyuşu okur.
-3. 🎤 Başla -> çocuk okur, kelimeler canlı yeşil/kırmızı olur.
-4. Hepsi yeşilse (10/10) -> 4 saniye sonucu gösterip otomatik yeni cümle gelir. İstersen Durdur'a basıp sonucu uzun tutabilirsin.
-5. Yanlışsa/yarımkalmışsa -> ⏹️ Durdur, sonucu gör, hazır olunca ⏭️ Atla -> yeni cümle.
+3. 🎤 Başla -> çocuk öyküyü baştan sona okur, kelimeler canlı yeşil/kırmızı olur.
+4. En az %90 doğru ve sonuna kadar okunmuşsa -> 4 saniye sonucu gösterip otomatik
+   yeni öykü gelir. İstersen Durdur'a basıp sonucu uzun tutabilirsin.
+5. Yanlışsa/yarımkalmışsa -> ⏹️ Durdur, sonucu gör, hazır olunca ⏭️ Atla -> yeni öykü.
 
 NOTLAR:
 - Android Chrome kullan. Samsung Internet desteklemez.
-- Yeni cümle eklemek için app.js içinde CUMLE_HAVUZU listesine ekle.
-- Veriler telefonda saklanır: okumaYildiz, okumaGun, okumaGunYildiz, okumaGunHatasiz, okumaHatasiz, okumaParaSira, okumaSeriBasari, okumaSeriZor.
+- Öyküler oykuler.js dosyasındadır; değiştirmek için 1000_kisa_oyku.docx'i
+  güncelleyip "python _uret.py" çalıştır (oykuler.js elle düzenlenmez).
+- Veriler telefonda saklanır: okumaYildiz, okumaGun, okumaGunYildiz, okumaGunHatasiz,
+  okumaHatasiz, okumaParaSira.
+- Uygulama güncellendiğinde sw.js içindeki CACHE sürümünü artır (v2 -> v3), yoksa
+  telefon eski sürümü göstermeye devam eder.
 
 İyi okumalar! 📚⭐🎤

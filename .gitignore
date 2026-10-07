@@ -1,6 +1,9 @@
 # Yayına girmemesi gerekenler
 *.zip
 
+# Geçici / ara dosyalar (yeniden üretilebilir)
+_oyku_metin.txt
+
 # Editör / işletim sistemi
 .vscode/
 .idea/
