@@ -1,7 +1,7 @@
 // Okuma Yıldızı - service worker (çevrimdışı önbellek)
 // ÖNEMLİ: Uygulama güncellendiğinde CACHE sürümünü artırın (v2 -> v3).
 // Aksi hâlde cihazlar eski sürümü önbellekten göstermeye devam eder.
-const CACHE = "okuma-yildizi-v2";
+const CACHE = "okuma-yildizi-v3";
 const FILES = ["./", "./index.html", "./style.css", "./oykuler.js", "./app.js", "./manifest.json", "./icon.svg"];
 
 self.addEventListener("install", (e) => {

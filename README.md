@@ -1,8 +1,8 @@
 # Okuma Yıldızı 📚⭐
 
 2. sınıf öğrencileri için **kısa öykü okuma antrenmanı**. Çocuk öyküyü yüksek sesle
-okur, mikrofon dinler, kelimeler doğru/yanlış olarak canlı boyanır.
-**5 hatasız öykü = 1 yıldız.**
+okur, mikrofon dinler, kelimeler doğru/yanlış/okunmadı olarak canlı boyanır.
+**Bir öyküyü %90 doğrulukla bitiren 1 tam yıldız kazanır.**
 
 ## Canlı adres
 
@@ -11,16 +11,32 @@ okur, mikrofon dinler, kelimeler doğru/yanlış olarak canlı boyanır.
 ## Nasıl çalışır
 
 - **1000 kısa öykü:** Her öykü 45-55 kelime (ortalama 49), 5 cümle.
-- **Yıldız kuralı:** Öyküyü **sonuna kadar** ve **en az %90 doğrulukla** oku.
-  Bu, öykü uzunluğuna göre **en fazla 4-5 hata** demektir (ekranda tam sayı yazar).
-- **Yıldız kazanma:** Hedefi tutan her **5 öykü = 1 yıldız**.
-- **Günlük görev:** 10 yıldız = günde 50 öykü. Günlük sayaçlar gece yarısı
+- **Kelime renkleri:**
+  - 🟩 **yeşil** = kelime tam doğru okundu
+  - 🟥 **kırmızı** = kelime yanlış okundu
+  - 🟨 **sarı** = kelime henüz okunmadı / atlandı
+- **Tam eşleşme:** Kelimenin birebir doğru okunması gerekir. Yaklaşık/benzer
+  eşleşme yoktur; bir harf eksik ya da farklıysa kelime kırmızı olur.
+- **Öykü ne zaman biter:** **Son kelime** sarı olmaktan çıkıp yeşil ya da kırmızı
+  olduğu anda öykü kilitlenir. Çocuk isterse öykünün **%100'ünü** okuyabilir;
+  uygulama %90'da okumayı kesmez. (Arada sarı kalan atlanmış kelimeler olsa bile
+  öykü, son kelime okununca biter.)
+- **Yıldız kuralı:** Öykü bittiğinde doğruluk **en az %90** ise **1 tam yıldız**.
+  Yıldız parça parça verilmez — her başarılı öykü tam 1 yıldızdır.
+  %90'ın altındaysa yıldız verilmez, sonuç "olmadı" olarak gösterilir.
+- **İzin verilen hata:** Öykü uzunluğuna göre **4-5 hata** (ekranda tam sayı yazar).
+  Eşik yuvarlanmış yüzdeye göre değil, gerçek orana göre uygulanır: 43/48 = %89,58
+  ekranda %89 görünür ve yıldız vermez.
+- **Günlük görev:** 10 yıldız = günde 10 öykü. Günlük sayaçlar gece yarısı
   sıfırlanır, toplamlar korunur.
-- **5 kollu yıldız:** Her hatasız öyküde bir kol altın olur, 5'te yıldız parlar.
-- **Otomatik geçiş:** Hedef tutulunca sonuç 4 saniye gösterilir, sonra yeni öykü gelir.
-  "Durdur" ile otomatik geçiş iptal edilir, "⏭️ Atla" ile ilerlenir.
+- **Otomatik geçiş:** Öykü kilitlenince sonuç gösterilir (başarılıda 4 sn,
+  başarısızda 6 sn) ve kendiliğinden sıradaki öyküye geçilir.
 - **Zorluk göstergesi:** ★☆☆ / ★★☆ / ★★★ — öykünün kendi metnine göre hesaplanır
   (konuma göre değil).
+
+> **Not:** Mikrofon konuşma tanıma kusursuz değildir. Tam eşleşme istendiği için
+> tanımanın yanlış duyduğu bir kelime kırmızı görünebilir. %90 eşiği (4-5 hata
+> payı) bunu bir ölçüde telafi eder.
 
 ### Öykü sırası hakkında
 
@@ -58,8 +74,9 @@ her öyküde farklı bir metinle karşılaşır.
 ## Veriler
 
 Tüm ilerleme cihazda `localStorage` içinde tutulur, sunucuya gönderilmez:
-`okumaYildiz`, `okumaGun`, `okumaGunYildiz`, `okumaGunHatasiz`, `okumaHatasiz`,
-`okumaParaSira`.
+`okumaYildiz` (toplam yıldız), `okumaGun` (son gün), `okumaGunYildiz` (günlük yıldız),
+`okumaOyku` (toplam okunan öykü), `okumaGunOyku` (bugün okunan öykü),
+`okumaParaSira` (sıradaki öykü).
 
 ## Geliştirme
 
@@ -81,8 +98,9 @@ kontrolü), çeşitlendirilmiş sırayı kurar, `oykuler.js`'i yazar ve kalite r
 node _test.js
 ```
 
-Yıldız kuralını doğrular: %90 sınırı, izin verilen hata sayısı, "sonuna kadar okuma"
-koruması (erken bırakmada yıldız verilmemesi).
+Yıldız kuralını doğrular: %90 sınırı, izin verilen hata sayısı, yuvarlama şişirmesi,
+"sonuna kadar okuma" koruması, tam kelime eşleşmesi ve **kayma hatası koruması**
+(tek bir eksik/fazla kelimenin öykünün geri kalanını kırmızıya çevirmemesi).
 
 ### Yayına alma
 
@@ -93,6 +111,6 @@ git add -A && git commit -m "aciklama" && git push
 Site 1-2 dakikada güncellenir.
 
 > ⚠️ **ÖNEMLİ:** Uygulama dosyaları değiştiğinde `sw.js` içindeki
-> `CACHE = "okuma-yildizi-v2"` sürümünü artırın (v3, v4...). Aksi hâlde çocuğun
+> `CACHE = "okuma-yildizi-v3"` sürümünü artırın (v4, v5...). Aksi hâlde çocuğun
 > cihazı eski sürümü önbellekten göstermeye devam eder. (`sw.js` eski önbellekleri
 > otomatik siler, ancak sürüm numarası artırılmalıdır.)

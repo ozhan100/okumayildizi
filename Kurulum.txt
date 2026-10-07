@@ -6,19 +6,29 @@ KURALLAR:
 - 1000 kısa öykü (her biri 5 cümle, ortalama 49 kelime). Sıra, ardışık öyküler
   benzer olmasın diye çeşitlendirilmiştir.
 - Zorluk göstergesi: ★☆☆ Kolay -> ★★☆ Orta -> ★★★ Zor (öykünün kendi metnine göre).
-- Yıldız kuralı: öyküyü SONUNA KADAR ve EN AZ %90 doğrulukla oku. Bu, öykü
-  uzunluğuna göre en fazla 4-5 hata demektir (ekranda tam sayı yazar).
-- Her 5 hatasız öykü = 1 yıldız. Sayaç ekranda "Hatasız: X/5" yazar.
-- Günlük görev: 10 yıldız = günde 50 hatasız öykü. Hatasız ve yıldız sayaçları gece
-  yarısı sıfırlanır, toplamlar durur.
-- 5 kollu bir yıldız: her hatasız öyküde bir kol altın olur, 5'te yıldız tamamen
-  parlak olur. Yıldız kazandığında şıklıkla parlar.
-- Otomatik geçiş: hedef tutulunca sonucu 4 saniye gösterir, sonra kendisi yeni
-  öyküye geçer.
-- Manuel Durdur: çocuk Durdur'a basarsa otomatik geçiş iptal, öykü ekranda kalır,
-  ⏭️ Atla ile geçer.
-- ÖNEMLİ: Yıldız için öykünün SONUNU da okumak şart. Baştan birkaç kelimeyi okuyup
-  bırakmak yıldız kazandırmaz.
+
+KELİME RENKLERİ:
+  YEŞİL   = kelime tam doğru okundu
+  KIRMIZI = kelime yanlış okundu
+  SARI    = kelime henüz okunmadı / atlandı
+- Kelimenin BİREBİR doğru okunması gerekir. Bir harf eksik ya da farklıysa kelime
+  kırmızı olur (yaklaşık/benzer eşleşme yok).
+
+ÖYKÜ NE ZAMAN BİTER:
+- SON KELİME sarı olmaktan çıkıp yeşil ya da kırmızı olduğu anda öykü kilitlenir.
+- Çocuk isterse öykünün %100'ünü okuyabilir; uygulama %90'da okumayı KESMEZ.
+- Arada sarı kalmış atlanmış kelimeler olsa bile öykü, son kelime okununca biter.
+- Çocuk erken bitirmek isterse ⏹️ Durdur'a basar; o anda sonuç kesinleşir.
+
+YILDIZ:
+- Öykü bittiğinde doğruluk EN AZ %90 ise 1 TAM YILDIZ verilir.
+- Yıldız parça parça verilmez; her başarılı öykü tam 1 yıldızdır.
+- %90'ın altındaysa yıldız verilmez, sonuç "olmadı" olarak gösterilir.
+- İzin verilen hata: öykü uzunluğuna göre 4-5 hata (ekranda tam sayı yazar).
+- Günlük görev: 10 yıldız = günde 10 öykü. Günlük sayaçlar gece yarısı sıfırlanır,
+  toplamlar durur.
+- Öykü kilitlenince sonuç gösterilir (başarılıda 4 sn, başarısızda 6 sn) ve
+  kendiliğinden sıradaki öyküye geçilir.
 
 KURULUM - EN KOLAY YOL (internet sitesi, önerilen):
 1. Telefonda Chrome'a yaz:  https://ozhan100.github.io/okumayildizi/
@@ -40,20 +50,23 @@ KURULUM - Wi-Fi ile (bilgisayardan, yedek yöntem):
 NOT: Mikrofon file:// ile ÇALIŞMAZ, yukarıdaki iki yöntemden birini kullan.
 
 KULLANIM:
-1. Okumaya Başla -> Öykü #X / 1000 gelir (kaç kelime olduğu da yazar).
+1. Okumaya Başla -> Öykü #X / 1000 gelir. Bütün kelimeler SARI (henüz okunmadı).
 2. 🔊 Örnek -> telefon doğru okuyuşu okur.
-3. 🎤 Başla -> çocuk öyküyü baştan sona okur, kelimeler canlı yeşil/kırmızı olur.
-4. En az %90 doğru ve sonuna kadar okunmuşsa -> 4 saniye sonucu gösterip otomatik
-   yeni öykü gelir. İstersen Durdur'a basıp sonucu uzun tutabilirsin.
-5. Yanlışsa/yarımkalmışsa -> ⏹️ Durdur, sonucu gör, hazır olunca ⏭️ Atla -> yeni öykü.
+3. 🎤 Başla -> çocuk öyküyü baştan sona okur; kelimeler canlı yeşil/kırmızı olur,
+   okunmayanlar sarı kalır.
+4. Son kelime de okununca öykü kilitlenir, sonuç görünür ve sıradaki öyküye geçer.
+5. ⏭️ Atla -> öyküyü değerlendirmeden atlar.
 
 NOTLAR:
 - Android Chrome kullan. Samsung Internet desteklemez.
+- Mikrofon konuşma tanıma kusursuz değildir; tam eşleşme istendiği için tanımanın
+  yanlış duyduğu bir kelime kırmızı görünebilir. %90 eşiği (4-5 hata payı) bunu
+  bir ölçüde telafi eder.
 - Öyküler oykuler.js dosyasındadır; değiştirmek için 1000_kisa_oyku.docx'i
   güncelleyip "python _uret.py" çalıştır (oykuler.js elle düzenlenmez).
-- Veriler telefonda saklanır: okumaYildiz, okumaGun, okumaGunYildiz, okumaGunHatasiz,
-  okumaHatasiz, okumaParaSira.
-- Uygulama güncellendiğinde sw.js içindeki CACHE sürümünü artır (v2 -> v3), yoksa
+- Veriler telefonda saklanır: okumaYildiz, okumaGun, okumaGunYildiz, okumaOyku,
+  okumaGunOyku, okumaParaSira.
+- Uygulama güncellendiğinde sw.js içindeki CACHE sürümünü artır (v3 -> v4), yoksa
   telefon eski sürümü göstermeye devam eder.
 
 İyi okumalar! 📚⭐🎤

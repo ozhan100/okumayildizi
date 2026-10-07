@@ -29,19 +29,18 @@
                 <div class="daily-box">
                     <div class="daily-title">🎯 Günlük Görev: 10 yıldız</div>
                     <div class="daily-count"><b id="daily-start">0</b> / 10 ⭐</div>
-                    <div class="flawless-count">✅ Hatasız öykü: <b id="hatasiz-start">0/5</b> → ⭐</div>
-                    <svg id="yildiz-start" class="yildiz-svg kucuk" viewBox="0 0 120 120" role="img" aria-label="Yıldız ilerlemesi"></svg>
+                    <div class="flawless-count">📖 Bugün okunan öykü: <b id="bugun-oyku-start">0</b></div>
                     <div class="progress-container">
                         <div class="progress-bar" id="daily-bar-start"></div>
                     </div>
                     <div class="daily-msg" id="daily-msg-start">Haydi başla!</div>
                 </div>
 
-                <div class="stars-bar">🌟 Toplam yıldız: <b id="total-stars-start">0</b> &nbsp;•&nbsp; 📝 <b id="para-count-start">1000</b> öykü</div>
+                <div class="stars-bar">🌟 Toplam yıldız: <b id="total-stars-start">0</b> &nbsp;•&nbsp; 📚 Okunan öykü: <b id="toplam-oyku-start">0</b> / <b id="para-count-start">1000</b></div>
 
                 <button id="btn-start-mic" class="btn-big btn-green">
                     <span class="btn-emoji">🎤</span>
-                    <span class="btn-text">Okumaya Başla<small>Öyküyü baştan sona oku, en az %90 tuttur, 5 öyküde ⭐ kazan</small></span>
+                    <span class="btn-text">Okumaya Başla<small>Öyküyü baştan sona oku, en az %90 doğruysa ⭐ kazan</small></span>
                 </button>
 
                 <p class="hint">🎤 Mikrofon modu internet ister (Chrome).<br>Sessiz odada, telefona yakın oku.</p>
@@ -53,7 +52,7 @@
             <div class="header">
                 <button class="btn-icon" id="btn-mic-home" title="Ana sayfa">🏠</button>
                 <h2>🎤 Öykü Oku</h2>
-                <div class="star-count">🎯 <span id="daily-mic">0</span>/10</div>
+                <div class="star-count">⭐ <span id="daily-mic">0</span>/10</div>
             </div>
 
             <div class="daily-mini">
@@ -68,9 +67,7 @@
             </div>
 
             <div id="mic-score" class="score-line">Doğruluk: — </div>
-            <div id="hatasiz-line" class="flawless-line">✅ Hatasız: <b id="hatasiz-mic">0/5</b> → ⭐</div>
-            <svg id="yildiz-mic" class="yildiz-svg" viewBox="0 0 120 120" role="img" aria-label="Yıldız ilerlemesi"></svg>
-            <div id="mic-feedback" class="feedback-line">🎤'ye bas ve öyküyü oku. Bitince Durdur'a bas, sonucu gör. Hazır olunca ⏭️ Atla'ya bas.</div>
+            <div id="mic-feedback" class="feedback-line">🎤'ye bas ve öyküyü baştan sona oku. Son kelimeyi de okuyunca sonuç kesinleşir.</div>
 
             <div class="controls">
                 <button id="btn-new-para" class="btn-round btn-next" title="Yeni öykü">⏭️<small>Atla</small></button>
@@ -83,7 +80,12 @@
                 <b>Duyduğum:</b>
                 <span id="mic-transcript">—</span>
             </div>
-            <p class="hint">Doğrular <span class="w-ok-demo">yeşil</span>, yanlışlar <span class="w-wrong-demo">kırmızı</span> olur. Yıldız için öyküyü <b>sonuna kadar</b> ve en az <b>%90 doğrulukla</b> oku.</p>
+            <p class="hint">
+                <span class="w-ok-demo">yeşil</span> = doğru &nbsp;•&nbsp;
+                <span class="w-wrong-demo">kırmızı</span> = yanlış &nbsp;•&nbsp;
+                <span class="w-yellow-demo">sarı</span> = henüz okunmadı<br>
+                Yıldız için sonuna kadar oku ve en az <b>%90 doğru</b> ol.
+            </p>
         </div>
 
     </div>
