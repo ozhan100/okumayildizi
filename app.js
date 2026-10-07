@@ -373,10 +373,30 @@ function micButonuYaz(dinliyor) {
 
 // ---------- Tanı (teşhis) paneli ----------
 // Mikrofonun nerede takıldığını telefondan görebilmek için (sorun giderme amaçlı).
-const TANI = { olay: {}, sonHata: "-", oturum: 0, seviyeMax: -1 };
+const TANI = { olay: {}, sonHata: "-", oturum: 0, seviyeMax: -1, izin: "bilinmiyor" };
 let taniTimer = null;
 
 function taniSay(ad) { TANI.olay[ad] = (TANI.olay[ad] || 0) + 1; }
+
+// Tarayıcının mikrofon izni durumu: granted (verilmiş) / denied (engellenmiş) / prompt
+// Android'de izin sorulmadıysa bu satır sebebini doğrudan gösterir.
+async function izinDurumunuOgren() {
+  try {
+    if (!navigator.permissions || !navigator.permissions.query) { TANI.izin = "API yok"; return; }
+    const d = await navigator.permissions.query({ name: "microphone" });
+    TANI.izin = d.state;
+    d.onchange = () => { TANI.izin = d.state; taniYaz(); };
+  } catch (e) { TANI.izin = "sorgulanamadı"; }
+}
+
+function izinEtiketi() {
+  switch (TANI.izin) {
+    case "granted": return "izin verilmiş ✅";
+    case "denied": return "ENGELLENMİŞ ❌";
+    case "prompt": return "henüz sorulmamış";
+    default: return TANI.izin;
+  }
+}
 
 function taniYaz() {
   const el = $("tani-icerik");
@@ -389,7 +409,8 @@ function taniYaz() {
     satir("SpeechRecognition", window.SpeechRecognition ? "var" :
          (window.webkitSpeechRecognition ? "var (webkit önekli)" : "YOK ❌")) +
     satir("getUserMedia", (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ? "var ✅" : "YOK ❌") +
-    satir("İzin (getUserMedia)", mikrofonIzniAlindi ? "alındı ✅" : "alınmadı") +
+    satir("Mikrofon izni (tarayıcı)", izinEtiketi()) +
+    satir("İzin (bu oturumda alındı)", mikrofonIzniAlindi ? "evet ✅" : "hayır") +
     satir("Başlatma sayısı", TANI.oturum) +
     satir("onstart", o.start || 0) +
     satir("onaudiostart", o.audiostart || 0) +
@@ -405,7 +426,30 @@ function taniYaz() {
       • <b>onstart</b> yoksa → tanıma hiç başlamıyor<br>
       • <b>onaudiostart</b> yoksa → ses tarayıcıya ulaşmıyor<br>
       • <b>onspeechstart</b> yoksa → konuşma algılanmıyor<br>
-      • Hepsi var ama <b>onresult</b> yoksa → Google konuşma servisi yanıt vermiyor</div>`;
+      • Hepsi var ama <b>onresult</b> yoksa → Google konuşma servisi yanıt vermiyor</div>` +
+    uyariKutusu();
+}
+
+// Sorunun en olası sebebini doğrudan, anlaşılır biçimde yazar.
+function uyariKutusu() {
+  const apiYok = !tanimaDestegiVarMi();
+  if (apiYok) {
+    return `<div class="tani-uyari">❌ <b>Bu tarayıcı konuşma tanımayı desteklemiyor.</b><br>
+      Android Chrome'da bu özellik yalnızca <b>154 ve sonrası</b> sürümlerde var.
+      Play Store'dan Chrome'u güncelle. Samsung Internet desteklemez; uygulamayı
+      Chrome ile aç.</div>`;
+  }
+  if (TANI.izin === "denied") {
+    return `<div class="tani-uyari">❌ <b>Mikrofon izni engellenmiş.</b> Bu yüzden izin sorulmuyor.
+      Düzeltmek için: adres çubuğunun solundaki <b>kilit/simge</b> → <b>İzinler</b> →
+      <b>Mikrofon</b> → <b>İzin ver</b>. Olmazsa Chrome → ⋮ → Ayarlar → Site ayarları →
+      Mikrofon yolundan bu siteyi bul ve izin ver.</div>`;
+  }
+  if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
+    return `<div class="tani-uyari">⚠️ Bu sayfa mikrofonu açamıyor (getUserMedia yok).
+      Sayfa güvenli bağlantıda (HTTPS) olmalı.</div>`;
+  }
+  return "";
 }
 
 function taniAc() {
@@ -413,6 +457,7 @@ function taniAc() {
   if (!p) return;
   p.classList.remove("hidden");
   taniYaz();
+  izinDurumunuOgren().then(taniYaz);
   if (!taniTimer) taniTimer = setInterval(taniYaz, 700);
 }
 function taniKapat() {
@@ -571,7 +616,8 @@ function micBaslat() {
   }
   mikrofonIzniAl().then((izin) => {
     if (!izin) {
-      $("mic-status").textContent = "❌ Mikrofon izni verilmedi. Tarayıcı izinlerinden mikrofonu aç.";
+      $("mic-status").textContent =
+        "❌ Mikrofon izni yok. Adres çubuğundaki kilit simgesi → İzinler → Mikrofon → İzin ver.";
       taniAc();
       return;
     }
@@ -666,3 +712,4 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
 
 $("para-count-start").textContent = OYKULAR.length;
 guncelleYildiz();
+izinDurumunuOgren();   // tanı paneli için izin durumunu önceden öğren

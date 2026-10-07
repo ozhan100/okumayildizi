@@ -112,6 +112,11 @@ h1 { margin: 8px 0 4px; font-size: 34px; color: #2c3e50; }
 .tani-satir span { color: #666; }
 .tani-satir b { text-align: right; word-break: break-word; }
 .tani-not { margin-top: 8px; font-size: 12px; color: #555; line-height: 1.5; background: #fff; border-radius: 10px; padding: 8px; }
+.tani-uyari {
+    margin-top: 8px; font-size: 13px; line-height: 1.55;
+    background: #FFEBEE; border: 2px solid #E53935; color: #B71C1C;
+    border-radius: 10px; padding: 10px; font-weight: 700;
+}
 .tani-test {
     width: 100%; margin-top: 10px; font-family: inherit; font-size: 15px; font-weight: 800;
     background: #E3F2FD; border: none; border-radius: 12px; padding: 10px; cursor: pointer;
