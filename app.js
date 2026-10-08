@@ -612,12 +612,20 @@ function tanimaKur() {
       micDurdur(false);
     } else if (e.error === "audio-capture") {
       $("mic-status").textContent = "❌ Mikrofon bulunamadı. Başka bir uygulama mikrofonu kullanıyor olabilir.";
+      dinleniyor = false;
+      micButonuYaz(false);
     } else if (e.error === "no-speech") {
       $("mic-status").textContent = "🔇 Ses duyamadım, telefona yaklaş ve tekrar oku.";
+      dinleniyor = false;
+      micButonuYaz(false);
     } else if (e.error === "network") {
       $("mic-status").textContent = "🌐 Konuşma servisine ulaşılamadı. İnterneti kontrol et.";
+      dinleniyor = false;
+      micButonuYaz(false);
     } else {
       $("mic-status").textContent = "⚠️ Hata: " + e.error;
+      dinleniyor = false;
+      micButonuYaz(false);
     }
   };
 
