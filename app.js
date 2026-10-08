@@ -191,7 +191,7 @@ function hizala(hedefN, duyulan) {
   const N = hedefN.length, H = duyulan.length;
   if (!N) return [];
   const D = Array.from({ length: N + 1 }, () => new Array(H + 1).fill(0));
-  const BASLANGIC_CEZASI = 100;  // Başta atlama çok maliyetli -> en başa eşleşme zorlanır
+  const BASLANGIC_CEZASI = 1000;  // Başta atlama çok maliyetli -> en başa eşleşme zorlanır
   for (let i = 1; i <= N; i++) D[i][0] = i * BASLANGIC_CEZASI;
   for (let k = 1; k <= H; k++) D[0][k] = k;
 
