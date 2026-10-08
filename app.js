@@ -355,7 +355,14 @@ function degerlendir(duyulanMetin) {
   // (Arada sarı kalan atlanmış kelimeler olsa bile öykü biter.)
   const sonKelimeCozuldu = N > 0 && durum[N - 1] !== "sari";
 
-  if (sonKelimeCozuldu) {
+  // GÜVENLİK: Son kelime çözülmüş görünse bile, öykünün %50'si hâlâ sarıysa
+  // (yani çocuk henüz öykünün başında/ortasındaysa) kilitleme.
+  // Bu, alignment'in nadir tie-breaking hataları veya geçiş kalıntıları
+  // yüzünden erken kilitlemeyi engeller.
+  const cozulmemisSayisi = durum.filter(d => d === "sari").length;
+  const erkenKilitKoruma = cozulmemisSayisi > N * 0.5;
+
+  if (sonKelimeCozuldu && !erkenKilitKoruma) {
     kilitle(dogru, N);
   } else if (!duyulan.length) {
     $("mic-feedback").textContent = "🎤'ye bas ve öyküyü baştan sona oku.";
