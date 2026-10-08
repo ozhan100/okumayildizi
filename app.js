@@ -159,6 +159,7 @@ let hedefOyku = "";
 let hedefKelimeler = [];
 let recognition = null;
 let dinleniyor = false;
+let yenidenDeneme = 0;    // onend sonrası yeniden başlatma deneme sayacı
 let sonTranskript = "";     // ekranda gösterilen tam metin
 let birikmisMetin = "";     // tamamlanmış tanıma oturumlarından biriken metin
 let oturumFinal = "";       // şu anki oturumun kesinleşmiş metni
@@ -444,6 +445,7 @@ function taniYaz() {
     `<div class="tani-karar ${karar[0]}">${karar[1]}</div>` +
     satir("Tarayıcı", (navigator.userAgent || "?").slice(0, 110)) +
     satir("Güvenli bağlantı", location.protocol === "https:" ? "evet ✅" : "HAYIR ❌ (" + location.protocol + ")") +
+    satir("Adres", location.origin + " — izin bu adrese verilir; localhost ile 127.0.0.1 farklı adrestir") +
     satir("SpeechRecognition", window.SpeechRecognition ? "var" :
          (window.webkitSpeechRecognition ? "var (webkit önekli)" : "YOK ❌")) +
     satir("getUserMedia", (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ? "var ✅" : "YOK ❌") +
@@ -579,7 +581,7 @@ function tanimaKur() {
   recognition.interimResults = true;
   recognition.maxAlternatives = 1;
 
-  recognition.onstart = () => { taniSay("start"); };
+  recognition.onstart = () => { taniSay("start"); yenidenDeneme = 0; };
   recognition.onaudiostart = () => { taniSay("audiostart"); };
   recognition.onsoundstart = () => { taniSay("soundstart"); };
   recognition.onspeechstart = () => { taniSay("speechstart"); };
@@ -615,9 +617,9 @@ function tanimaKur() {
       dinleniyor = false;
       micButonuYaz(false);
     } else if (e.error === "no-speech") {
+      // Sessizlik normaldir (çocuk kelimeler arasında duraklar).
+      // Oturumu öldürme; onend gelecek ve yeniden başlatma denenecek.
       $("mic-status").textContent = "🔇 Ses duyamadım, telefona yaklaş ve tekrar oku.";
-      dinleniyor = false;
-      micButonuYaz(false);
     } else if (e.error === "network") {
       $("mic-status").textContent = "🌐 Konuşma servisine ulaşılamadı. İnterneti kontrol et.";
       dinleniyor = false;
@@ -636,20 +638,29 @@ function tanimaKur() {
     oturumFinal = "";
     if (!dinleniyor) return;
     // Android'de oturumlar çok sık biter; hemen yeniden başlatmak hata verebilir.
-    // Kısa bir gecikmeyle ve durum kontrolüyle yeniden deneriz.
-    setTimeout(() => {
-      if (!dinleniyor || !recognition) return;
-      try {
-        recognition.start();
-        TANI.oturum++;
-      } catch (err) {
-        const ad = err && err.name ? err.name : err;
-        TANI.sonHata = "yeniden başlatma: " + ad;
-        $("mic-status").textContent = "⚠️ Tanıma yeniden başlatılamadı. Durdur'a basıp tekrar dene.";
-        dinleniyor = false;
-        micButonuYaz(false);
-      }
-    }, 250);
+    // InvalidStateError = tanıma zaten başlıyor/çalışıyor demektir: öldürme, bekleyip tekrar dene.
+    const yenidenDene = (gecikme) => {
+      setTimeout(() => {
+        if (!dinleniyor || !recognition) return;
+        try {
+          recognition.start();
+          TANI.oturum++;
+          yenidenDeneme = 0;
+        } catch (err) {
+          const ad = err && err.name ? err.name : err;
+          if (yenidenDeneme < 4) {
+            yenidenDeneme++;
+            yenidenDene(700);
+            return;
+          }
+          TANI.sonHata = "yeniden başlatma: " + ad;
+          $("mic-status").textContent = "⚠️ Tanıma yeniden başlatılamadı. Durdur'a basıp tekrar dene.";
+          dinleniyor = false;
+          micButonuYaz(false);
+        }
+      }, gecikme);
+    };
+    yenidenDene(250);
   };
 }
 
