@@ -191,7 +191,8 @@ function hizala(hedefN, duyulan) {
   const N = hedefN.length, H = duyulan.length;
   if (!N) return [];
   const D = Array.from({ length: N + 1 }, () => new Array(H + 1).fill(0));
-  for (let i = 1; i <= N; i++) D[i][0] = i;
+  const BASLANGIC_CEZASI = 100;  // Başta atlama çok maliyetli -> en başa eşleşme zorlanır
+  for (let i = 1; i <= N; i++) D[i][0] = i * BASLANGIC_CEZASI;
   for (let k = 1; k <= H; k++) D[0][k] = k;
 
   for (let i = 1; i <= N; i++) {
@@ -348,6 +349,17 @@ function degerlendir(duyulanMetin) {
   const yuzde = N ? Math.floor(dogru / N * 100) : 0;
   sonDegerlendirme = { dogru, toplam: N, yuzde };
   $("mic-score").textContent = `Doğruluk: %${yuzde} (${dogru}/${N} kelime doğru • yıldız için hatasız)`;
+
+  // Debug: hedef ilk 5 kelime ve durum özeti
+  const debugHedef = $("debug-hedef");
+  if (debugHedef) debugHedef.textContent = hedefKelimeler.slice(0,5).join(" ") + (hedefKelimeler.length >5 ? " ..." : "");
+  const debugDurum = $("debug-durum");
+  if (debugDurum) {
+    const sarı = durum.filter(d=>d==="sari").length;
+    const yeşil = durum.filter(d=>d==="yesil").length;
+    const kırmızı = durum.filter(d=>d==="kirmizi").length;
+    debugDurum.textContent = `yeşil=${yeşil} kırmızı=${kırmızı} sarı=${sarı} | sonKelime=${durum[N-1]||"-"} | duyulan=${duyulan.length} kelime`;
+  }
 
   if (oykuKilitlendi) return sonDegerlendirme;
 
@@ -762,7 +774,26 @@ $("btn-start-mic").onclick = () => {
 };
 $("btn-mic-home").onclick = () => { micDurdur(false); taniKapat(); show("start"); guncelleYildiz(); };
 $("btn-new-para").onclick = () => yeniOyku();
-$("btn-listen-para").onclick = () => { if (hedefOyku) seslendir(hedefOyku); };
+$("btn-restart-oyku").onclick = () => {
+  if (!hedefOyku) return;
+  // Mevcut öyküyü baştan başlat: renkleri sıfırla, mikrofonu durdur ve tekrar başlat
+  micDurdur(false);
+  oykuKilitlendi = false;
+  birikmisMetin = "";
+  oturumFinal = "";
+  sonTranskript = "";
+  sonDegerlendirme = { dogru: 0, toplam: hedefKelimeler.length, yuzde: 0 };
+  // Renkleri sarıya (henüz okunmadı) döndür
+  hedefKelimeler.forEach((_, i) => {
+    const el = $("pw-" + i);
+    if (el) { el.classList.remove("w-ok", "w-bad"); el.classList.add("w-yellow"); }
+    if (i === 0) el?.classList.add("w-next"); else el?.classList.remove("w-next");
+  });
+  $("mic-score").textContent = `Doğruluk: — (${hedefKelimeler.length} kelime • yıldız için hatasız)`;
+  $("mic-feedback").textContent = "🎤'ye bas ve öyküyü baştan sona oku. Son kelimeyi de okuyunca sonuç kesinleşir.";
+  $("mic-status").textContent = "Mikrofon kapalı. Tekrar başlayabilirsin.";
+  $("mic-transcript").textContent = "—";
+};
 $("btn-mic").onclick = () => {
   if (dinleniyor) { micDurdur(true); return; }  // dinlerken her an durdurulabilir
   if (baslatiliyor) return;              // izin istenirken tekrar basılmasın
