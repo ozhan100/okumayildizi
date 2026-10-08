@@ -215,8 +215,10 @@ function hizala(hedefN, duyulan) {
         i--; k--; continue;
       }
     }
+    // Önce fazladan duyulan kelimeyi atla (ekleme), sonra hedef kelimeyi atla (silme)
+    // Bu, erken kaymayı önler ve okumanın soldan sağa ilerlemesini zorlar
+    if (k > 0 && D[i][k] === D[i][k - 1] + 1) { k--; continue; }
     if (i > 0 && D[i][k] === D[i - 1][k] + 1) { durum[i - 1] = "sari"; i--; continue; }
-    k--; // fazladan duyulan kelime: yok say
   }
   return durum;
 }
