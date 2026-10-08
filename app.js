@@ -190,36 +190,44 @@ function normalizeMetin(m) {
 function hizala(hedefN, duyulan) {
   const N = hedefN.length, H = duyulan.length;
   if (!N) return [];
-  const D = Array.from({ length: N + 1 }, () => new Array(H + 1).fill(0));
-  const BASLANGIC_CEZASI = 1000;  // Başta atlama çok maliyetli -> en başa eşleşme zorlanır
-  for (let i = 1; i <= N; i++) D[i][0] = i * BASLANGIC_CEZASI;
-  for (let k = 1; k <= H; k++) D[0][k] = k;
-
-  for (let i = 1; i <= N; i++) {
-    for (let k = 1; k <= H; k++) {
-      const esit = hedefN[i - 1] === duyulan[k - 1];
-      const capraz = D[i - 1][k - 1] + (esit ? 0 : 1); // eşleşme ya da yanlış okuma
-      const atlaHedef = D[i - 1][k] + 1;               // hedef kelime okunmadı
-      const fazlaDuyulan = D[i][k - 1] + 1;            // duyulan kelime fazladan
-      D[i][k] = Math.min(capraz, atlaHedef, fazlaDuyulan);
-    }
-  }
-
+  // SOLA YAPIŞIK, SAĞA KAYMASIZ GREEDY EŞLEŞTİRME
+  // Levenshtein yerine sıralı okumayı zorlayan basit eşleştirme
   const durum = new Array(N).fill("sari");
-  let i = N, k = H;
-  while (i > 0 || k > 0) {
-    if (i > 0 && k > 0) {
-      const esit = hedefN[i - 1] === duyulan[k - 1];
-      if (D[i][k] === D[i - 1][k - 1] + (esit ? 0 : 1)) {
-        durum[i - 1] = esit ? "yesil" : "kirmizi";
-        i--; k--; continue;
+  let i = 0; // hedef indeksi
+  let k = 0; // duyulan indeksi
+  const LOOKAHEAD = 3; // okurken 3 kelime ileriyi arayabilir
+  while (i < N && k < H) {
+    if (hedefN[i] === duyulan[k]) {
+      durum[i] = "yesil";
+      i++; k++;
+      continue;
+    }
+    // Hedef kelime duyulan'da ileride mi? En fazla LOOKAHEAD kadar ara
+    let foundK = -1;
+    let look = Math.min(LOOKAHEAD, H - k);
+    for (let j = 1; j < look; j++) {
+      if (hedefN[i] === duyulan[k + j]) {
+        foundK = k + j;
+        break;
       }
     }
-    // Önce fazladan duyulan kelimeyi atla (ekleme), sonra hedef kelimeyi atla (silme)
-    // Bu, erken kaymayı önler ve okumanın soldan sağa ilerlemesini zorlar
-    if (k > 0 && D[i][k] === D[i][k - 1] + 1) { k--; continue; }
-    if (i > 0 && D[i][k] === D[i - 1][k] + 1) { durum[i - 1] = "sari"; i--; continue; }
+    if (foundK !== -1) {
+      // Aradaki fazla duyulan kelimeler yok sayılır
+      durum[i] = "yesil";
+      i++;
+      k = foundK + 1;
+      continue;
+    }
+    // Hedef kelime bu grupta bulunamadı → yanlış okuma veya atlama
+    // Duyulan kelimeyi atla (fazla/duyulmamış) ve hedefi kırmızı işaretle
+    // Daha sonra doğru kelime gelirse tekrar eşleşebilir
+    // Basit kural: hedef kelimeyi kırmızı yap ve hedef ilerle
+    // Duyulan kelimeyi de ilerlet ki sonsuz döngü olmasın
+    durum[i] = "kirmizi";
+    i++;
+    k++;
   }
+  // Kalan hedef kelimeler sarı kalır (henüz okunmadı)
   return durum;
 }
 
