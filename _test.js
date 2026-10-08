@@ -1,5 +1,6 @@
 // app.js degerlendirme + oyku havuzu mantigini sahte DOM ile test eder (gecici dosya).
 const fs = require("fs");
+const GERCEK_TIMEOUT = setTimeout;
 
 function sahteEl() {
   return {
@@ -37,9 +38,10 @@ const KAYNAK = fs.readFileSync("oykuler.js", "utf8") + "\n" + fs.readFileSync("a
 // Uygulamayi (yeniden) yukler: sayfa acilisini taklit eder
 function yukle() {
   return eval(KAYNAK + `
-; ({ hizala, degerlendir, yeniOyku, izinHata, micBaslat,
+; ({ hizala, degerlendir, yeniOyku, micBaslat, micDurdur,
      hedef: () => hedefKelimeler,
      kilitli: () => oykuKilitlendi,
+     dinliyor: () => dinleniyor,
      yildiz: () => toplamYildiz,
      havuzBoyu: () => havuz.length,
      hedefIdx: () => hedefIdx })`);
@@ -81,7 +83,7 @@ kontrol("Arada 2 kelime eksik -> yalnız onlar sarı",
 console.log("\n=== 2. Öykü ne zaman kilitlenir? ===");
 api.yeniOyku();
 const N = api.hedef().length;
-console.log(`  (öykü: ${N} kelime • %90 için en fazla ${api.izinHata(N)} hata)`);
+console.log(`  (öykü: ${N} kelime • yıldız için HATASIZ (%100) gerekir)`);
 
 api.yeniOyku();
 api.degerlendir(api.hedef().slice(0, -1).join(" "));
@@ -99,28 +101,26 @@ const hC = api.hedef();
 const y1 = api.yildiz();
 api.degerlendir(hC.slice(0, -1).concat("zzz").join(" "));
 kontrol("Son kelime yanlışsa öykü kilitlenir", api.kilitli() === true);
-kontrol("Son kelime yanlış ama %90 üstü -> yıldız verilir", api.yildiz() === y1 + 1);
+kontrol("Tek yanlışta bile yıldız VERİLMEZ (%100 kuralı)", api.yildiz() === y1, `${y1} -> ${api.yildiz()}`);
 
-// ============================================================ 3. %90 EŞİĞİ
-console.log("\n=== 3. %90 eşiği (yuvarlama ile şişirilmemeli) ===");
+// ============================================================ 3. %100 KURALI
+console.log("\n=== 3. %100 kuralı (tek yanlışta yıldız yok) ===");
 function hatali(hedef, n) {
   const idx = new Set(Array.from({ length: n }, (_, i) => Math.min(hedef.length - 1, Math.floor((i + 1) * hedef.length / (n + 1)))));
   return hedef.map((w, i) => (idx.has(i) ? "zzz" : w)).join(" ");
 }
 let esikTamam = true;
-for (const n of [0, 2, 4, 6, 10]) {
+for (const n of [0, 1, 2, 4]) {
   api.yeniOyku();
   const h = api.hedef();
-  const izin = api.izinHata(h.length);
   const once = api.yildiz();
   api.degerlendir(hatali(h, n));
   const aldi = api.yildiz() > once;
-  const beklenen = n <= izin;
+  const beklenen = n === 0;
   if (aldi !== beklenen) esikTamam = false;
-  console.log(`  ${aldi === beklenen ? "GEÇTİ " : "KALDI "} ${h.length} kelimede ${n} hata -> yıldız ${aldi ? "var" : "yok"} (izin ${izin})`);
+  console.log(`  ${aldi === beklenen ? "GEÇTİ " : "KALDI "} ${h.length} kelimede ${n} hata -> yıldız ${aldi ? "var" : "yok"}`);
 }
-kontrol("Eşik tüm durumlarda doğru", esikTamam);
-kontrol("Yuvarlama şişirmesi yok (43/48 = %89,58 -> yıldız yok)", 43 < 48 - api.izinHata(48));
+kontrol("Eşik tüm durumlarda doğru (sadece hatasız)", esikTamam);
 
 api.yeniOyku();
 const hT = api.hedef().map(nrm);
@@ -232,6 +232,18 @@ kontrol("Geçersiz indeks içeren kayıt reddedilir", a5.havuzBoyu() === 1000, `
   srOrnek.onresult(sonucOlayi("cam bir", false));
   kontrol("Geçici (interim) sonuç da metne eklenir",
     duyulan().endsWith("cam bir"), `"${duyulan()}"`);
+
+  // Kilit sonrası mikrofon KAPANMAMALI (kullanıcı Durdur'a basana kadar sürer)
+  a6.yeniOyku();
+  await new Promise(r => GERCEK_TIMEOUT(r, 650)); // geçiş koruma penceresi geçsin
+  const tam6 = a6.hedef().join(" ");
+  const y6 = a6.yildiz();
+  srOrnek.onresult(sonucOlayi(tam6, true));
+  kontrol("10/10 okununca öykü kilitlenir", a6.kilitli() === true);
+  kontrol("Hatasız öykü 1 yıldız verir", a6.yildiz() === y6 + 1);
+  kontrol("Kilit sonrası mikrofon ÇALIŞMAYA DEVAM eder", srOrnek.calisiyor === true && a6.dinliyor() === true);
+  a6.micDurdur(true); // kullanıcı Durdur'a bastı
+  kontrol("Manuel Durdur mikrofonu kapatır", srOrnek.calisiyor === false && a6.dinliyor() === false);
 
   // Olay sayaçları tanı paneli için tutuluyor mu?
   kontrol("Tanı sayaçları kaydedildi (result/end/start)", true);

@@ -24,21 +24,20 @@ KELİME RENKLERİ:
 - Kelimenin BİREBİR doğru okunması gerekir. Bir harf eksik ya da farklıysa kelime
   kırmızı olur (yaklaşık/benzer eşleşme yok).
 
-ÖYKÜ NE ZAMAN BİTER:
+ÖYKÜ NE ZAMAN BİTER (ALTIN KURAL):
 - SON KELİME sarı olmaktan çıkıp yeşil ya da kırmızı olduğu anda öykü kilitlenir.
-- Çocuk isterse öykünün %100'ünü okuyabilir; uygulama %90'da okumayı KESMEZ.
 - Arada sarı kalmış atlanmış kelimeler olsa bile öykü, son kelime okununca biter.
 - Çocuk erken bitirmek isterse ⏹️ Durdur'a basar; o anda sonuç kesinleşir.
+- MİKROFON KAPANMAZ: kilit sonrası da dinlemeye devam eder; kullanıcı Durdur'a
+  basana kadar çalışır. Yeni öyküye geçince kaldığı yerden dinlemeyi sürdürür.
 
-YILDIZ:
-- Öykü bittiğinde doğruluk EN AZ %90 ise 1 TAM YILDIZ verilir.
-- Yıldız parça parça verilmez; her başarılı öykü tam 1 yıldızdır.
-- %90'ın altındaysa yıldız verilmez, sonuç "olmadı" olarak gösterilir.
-- İzin verilen hata: öykü uzunluğuna göre 4-5 hata (ekranda tam sayı yazar).
-- Günlük görev: 10 yıldız = günde 10 öykü. Günlük sayaçlar gece yarısı sıfırlanır,
-  toplamlar durur.
-- Öykü kilitlenince sonuç gösterilir (başarılıda 4 sn, başarısızda 6 sn) ve
+YILDIZ (%100 HATASIZ KURALI):
+- Öykü bittiğinde BÜTÜN kelimeler doğruysa 1 TAM YILDIZ verilir.
+- Tek yanlışta bile yıldız verilmez; sonuç gösterilir ve yıldızsız geçilir.
+- Her durumda (yıldızlı/yıldızsız) sonuç birkaç saniye gösterilir ve
   kendiliğinden sıradaki öyküye geçilir.
+- Günlük görev: 10 yıldız = günde 10 hatasız öykü. Günlük sayaçlar gece yarısı
+  sıfırlanır, toplamlar durur.
 
 KURULUM - EN KOLAY YOL (internet sitesi, önerilen):
 1. Telefonda Chrome'a yaz:  https://ozhan100.github.io/okumayildizi/
@@ -82,8 +81,8 @@ NOTLAR:
 - Chrome tanıma için Google'ın konuşma servisini kullanır. Klavyede sesli yazma
   çalışmıyorsa ("Speech Services by Google" eksik/devre dışı) bu da çalışmaz.
 - Mikrofon konuşma tanıma kusursuz değildir; tam eşleşme istendiği için tanımanın
-  yanlış duyduğu bir kelime kırmızı görünebilir. %90 eşiği (4-5 hata payı) bunu
-  bir ölçüde telafi eder.
+  yanlış duyduğu bir kelime kırmızı görünebilir ve yıldızı engelleyebilir.
+  Sessiz odada, tane tane okumak en iyi sonucu verir.
 - Öyküler oykuler.js dosyasındadır; değiştirmek için 1000_kisa_oyku.docx'i
   güncelleyip "python _uret.py" çalıştır (oykuler.js elle düzenlenmez).
 - Veriler telefonda saklanır: okumaYildiz, okumaGun, okumaGunYildiz, okumaOyku,

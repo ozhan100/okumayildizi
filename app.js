@@ -1,7 +1,7 @@
 // Okuma Yıldızı - 2. Sınıf | Kısa Öykü Okuma (mikrofonla takip)
 // Kaynak: 1000 kısa öykü (oykuler.js)
 //
-// KURAL: Öyküyü SONUNA KADAR oku. En az %90 doğruysa 1 TAM yıldız. Günlük görev: 10 yıldız.
+// KURAL: Öyküyü SONUNA KADAR oku. Tamamı hatasızsa (%100) 1 TAM yıldız. Günlük görev: 10 yıldız.
 // KELİME RENKLERİ:
 //   yeşil  = kelime tam doğru okundu
 //   kırmızı = kelime yanlış okundu
@@ -9,15 +9,11 @@
 // Öykü, SON KELİME sarı olmaktan çıkınca (yeşil ya da kırmızı olunca) kilitlenir;
 // sonuç olumluysa yıldız verilir, sonra kendiliğinden sıradaki öyküye geçilir.
 
-const GUNLUK_HEDEF = 10;          // günlük 10 yıldız = 10 öykü
-const HEDEF_DOGRULUK = 0.90;      // yıldız için gereken en düşük doğruluk
+const GUNLUK_HEDEF = 10;          // günlük 10 yıldız = 10 hatasız öykü
+// ALTIN KURAL (yıldız): BÜTÜN kelimeler doğru olmalı — tek yanlışta yıldız YOK.
+// (Eşik hesabı yok; dogru === toplam aranır.)
 const SONUC_SURESI_OLUMLU = 4000; // ms: başarılı sonucu göster, sonra yeni öykü
 const SONUC_SURESI_OLUMSUZ = 6000;// ms: başarısızda hataları görebilmek için daha uzun
-
-// %90 doğruluk için izin verilen en fazla hata sayısı
-function izinHata(uzunluk) {
-  return uzunluk - Math.ceil(uzunluk * HEDEF_DOGRULUK);
-}
 
 // ---------- Öykü zorluğu: harf sayısı + uzun kelime cezası (2. sınıf Türkçesi) ----------
 function metinZorluk(m) {
@@ -166,6 +162,7 @@ let oturumFinal = "";       // şu anki oturumun kesinleşmiş metni
 let mikrofonIzniAlindi = false;
 let baslatiliyor = false;   // izin istenirken buton tekrar basılmasın
 let oykuKilitlendi = false;   // bu öykünün sonucu kesinleşti mi
+let gecisZamani = 0;          // son öykü geçiş anı (eski sesin yenisini kirletmesini engeller)
 let otoGecisTimer = null;
 let sonDegerlendirme = { dogru: 0, toplam: 0, yuzde: 0 };
 
@@ -224,7 +221,10 @@ function hizala(hedefN, duyulan) {
 }
 
 function yeniOyku() {
-  micDurdur(false);
+  // DİKKAT: mikrofon KAPATILMAZ — kullanıcı Durdur'a basana kadar dinleme sürer.
+  // Sadece bekleyen otomatik geçiş sayacı temizlenir (manuel Atla durumu).
+  if (otoGecisTimer) { clearTimeout(otoGecisTimer); otoGecisTimer = null; }
+  gecisZamani = Date.now(); // geçiş anındaki eski ses yeni öyküyü kirletmesin (500ms koruma)
   yeniTurBasladi = false;
   const idx = siradakiOykuIndeksi();
   hedefIdx = idx;
@@ -245,7 +245,7 @@ function yeniOyku() {
   $("para-label").textContent =
     `Öykü #${idx + 1} / ${OYKULAR.length} • ${hedefKelimeler.length} kelime • ${band.yildiz} ${band.ad} 👇 Yüksek sesle oku`;
   $("mic-transcript").textContent = "—";
-  $("mic-score").textContent = `Doğruluk: — (${hedefKelimeler.length} kelime • en fazla ${izinHata(hedefKelimeler.length)} hata)`;
+  $("mic-score").textContent = `Doğruluk: — (${hedefKelimeler.length} kelime • yıldız için hatasız)`;
   $("mic-feedback").textContent = "🎤'ye bas ve öyküyü baştan sona oku. Son kelimeyi de okuyunca sonuç kesinleşir.";
   $("mic-status").textContent = yeniTurBasladi
     ? `🎉 ${OYKULAR.length} öykünün hepsi okundu! Yeni tur başladı, sıra yeniden karıştırıldı.`
@@ -269,20 +269,16 @@ function renkleriCiz(durum) {
 }
 
 // ---------- Öyküyü kilitle: sonucu belirle, yıldızı ver, sıradakine geç ----------
+// ALTIN KURAL: son kelime sarı dışında bir renk olunca kilitlenir.
+// Mikrofon KAPANMAZ — kullanıcı Durdur'a basana kadar dinlemeye devam eder.
+// (Kilit sonrası gelen sonuçlar bu öyküyü değiştirmez; yeni öyküye temiz başlanır.)
 function kilitle(dogru, toplam) {
   if (oykuKilitlendi) return;
   oykuKilitlendi = true;
 
-  // Mikrofonu kapat (yeni sonuç gelmesin)
-  dinleniyor = false;
-  if (otoGecisTimer) { clearTimeout(otoGecisTimer); otoGecisTimer = null; }
-  try { if (recognition) recognition.stop(); } catch (e) { /* yok say */ }
-  micButonuYaz(false);
-
   const yuzde = toplam ? Math.floor(dogru / toplam * 100) : 0;
-  // Eşik, yuvarlanmış yüzdeye göre DEĞİL, gerçek orana göre uygulanır:
-  // %89,6 ekranda %90 görünse bile yıldız vermemeli.
-  const basarili = toplam > 0 && dogru >= toplam - izinHata(toplam);
+  // Yıldız SADECE hatasız okumada: tek yanlışta yıldız yok.
+  const basarili = toplam > 0 && dogru === toplam;
 
   toplamOyku++;
   gunlukOyku++;
@@ -302,7 +298,7 @@ function kilitle(dogru, toplam) {
       mesaj = `🌟 %${yuzde} doğru! 1 TAM yıldız kazandın! (${gunlukYildiz}/${GUNLUK_HEDEF})`;
     }
   } else {
-    mesaj = `💪 %${yuzde} doğru (${dogru}/${toplam}). Yıldız için en az %90 gerek.`;
+    mesaj = `💪 %${yuzde} doğru (${dogru}/${toplam}). Yıldız için bütün kelimeler doğru olmalı (hatasız).`;
   }
   guncelleYildiz();
 
@@ -324,8 +320,18 @@ function kilitle(dogru, toplam) {
     clearInterval(adim);
     otoGecisTimer = null;
     yeniOyku();
-    $("mic-status").textContent = "Yeni öykü hazır! 🎤 Başla'ya bas.";
+    // Kilitte mikrofon kapatılmadığı için burada da açık olmalı;
+    // yine de tanımanın gerçekten çalıştığından emin ol.
+    mikrofonuSurdur();
+    $("mic-status").textContent = dinleniyor ? "🔴 Dinliyorum... Yeni öyküyü oku!" : "Yeni öykü hazır! 🎤 Başla'ya bas.";
   }, sure);
+}
+
+// Kullanıcı durdurmadıysa tanımanın çalıştığından emin ol (kilit sonrası da dinleme sürer).
+function mikrofonuSurdur() {
+  if (!dinleniyor || !recognition) return;
+  try { recognition.start(); TANI.oturum++; }
+  catch (err) { /* InvalidStateError = zaten çalışıyor, sorun yok */ }
 }
 
 // ---------- Değerlendirme ----------
@@ -341,7 +347,7 @@ function degerlendir(duyulanMetin) {
 
   const yuzde = N ? Math.floor(dogru / N * 100) : 0;
   sonDegerlendirme = { dogru, toplam: N, yuzde };
-  $("mic-score").textContent = `Doğruluk: %${yuzde} (${dogru}/${N} kelime doğru • en fazla ${izinHata(N)} hata)`;
+  $("mic-score").textContent = `Doğruluk: %${yuzde} (${dogru}/${N} kelime doğru • yıldız için hatasız)`;
 
   if (oykuKilitlendi) return sonDegerlendirme;
 
@@ -603,6 +609,9 @@ function tanimaKur() {
     sonTranskript = toplam;
     $("mic-transcript").textContent = toplam || "Dinliyorum...";
     if (oykuKilitlendi) return;   // sonuç kesinleşti
+    // Öykü geçişinden hemen sonra gelen sonuç eski sese aittir; yeni öyküyü kirletmesin.
+    // (Metin ekranda görünür ama değerlendirmeye girmez; sonraki sonuçlar zaten birikimli gelir.)
+    if (Date.now() - gecisZamani < 500) return;
     degerlendir(toplam);          // son kelime çözülünce kilitle() çağrılır
   };
 
@@ -689,7 +698,7 @@ function micBaslat() {
         if (el) { el.classList.remove("w-ok", "w-bad"); el.classList.add("w-yellow"); }
       });
       sonDegerlendirme = { dogru: 0, toplam: hedefKelimeler.length, yuzde: 0 };
-      $("mic-score").textContent = `Doğruluk: — (${hedefKelimeler.length} kelime • en fazla ${izinHata(hedefKelimeler.length)} hata)`;
+      $("mic-score").textContent = `Doğruluk: — (${hedefKelimeler.length} kelime • yıldız için hatasız)`;
     }
     dinleniyor = true;
     try {
@@ -748,9 +757,9 @@ $("btn-mic-home").onclick = () => { micDurdur(false); taniKapat(); show("start")
 $("btn-new-para").onclick = () => yeniOyku();
 $("btn-listen-para").onclick = () => { if (hedefOyku) seslendir(hedefOyku); };
 $("btn-mic").onclick = () => {
-  if (oykuKilitlendi) return;            // sonuç kesinleşti, sıradaki öykü beklenir
-  if (dinleniyor) { micDurdur(true); return; }
+  if (dinleniyor) { micDurdur(true); return; }  // dinlerken her an durdurulabilir
   if (baslatiliyor) return;              // izin istenirken tekrar basılmasın
+  if (oykuKilitlendi) yeniOyku();        // kilitli sonuç ekrandaysa: yeni öyküye geç ve başlat
   baslatiliyor = true;
   const b = $("btn-mic");
   if (b) b.innerHTML = "⏳<small>Bekle</small>";

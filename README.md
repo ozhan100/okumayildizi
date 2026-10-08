@@ -2,7 +2,7 @@
 
 2. sınıf öğrencileri için **kısa öykü okuma antrenmanı**. Çocuk öyküyü yüksek sesle
 okur, mikrofon dinler, kelimeler doğru/yanlış/okunmadı olarak canlı boyanır.
-**Bir öyküyü %90 doğrulukla bitiren 1 tam yıldız kazanır.**
+**Bir öyküyü hatasız (%100) bitiren 1 tam yıldız kazanır.**
 
 ## Canlı adres
 
@@ -21,13 +21,10 @@ okur, mikrofon dinler, kelimeler doğru/yanlış/okunmadı olarak canlı boyanı
   olduğu anda öykü kilitlenir. Çocuk isterse öykünün **%100'ünü** okuyabilir;
   uygulama %90'da okumayı kesmez. (Arada sarı kalan atlanmış kelimeler olsa bile
   öykü, son kelime okununca biter.)
-- **Yıldız kuralı:** Öykü bittiğinde doğruluk **en az %90** ise **1 tam yıldız**.
-  Yıldız parça parça verilmez — her başarılı öykü tam 1 yıldızdır.
-  %90'ın altındaysa yıldız verilmez, sonuç "olmadı" olarak gösterilir.
-- **İzin verilen hata:** Öykü uzunluğuna göre **4-5 hata** (ekranda tam sayı yazar).
-  Eşik yuvarlanmış yüzdeye göre değil, gerçek orana göre uygulanır: 43/48 = %89,58
-  ekranda %89 görünür ve yıldız vermez.
-- **Günlük görev:** 10 yıldız = günde 10 öykü. Günlük sayaçlar gece yarısı
+- **Yıldız kuralı (ALTIN KURAL — %100 HATASIZ):** Öykü bittiğinde **bütün kelimeler
+  doğruysa** **1 tam yıldız** verilir. **Tek yanlışta bile yıldız yok**;
+  sonuç gösterilir ve yıldızsız geçilir. Yıldız parça parça verilmez.
+- **Günlük görev:** 10 yıldız = günde 10 hatasız öykü. Günlük sayaçlar gece yarısı
   sıfırlanır, toplamlar korunur.
 - **Otomatik geçiş:** Öykü kilitlenince sonuç gösterilir (başarılıda 4 sn,
   başarısızda 6 sn) ve kendiliğinden sıradaki öyküye geçilir.
@@ -35,8 +32,8 @@ okur, mikrofon dinler, kelimeler doğru/yanlış/okunmadı olarak canlı boyanı
   (konuma göre değil).
 
 > **Not:** Mikrofon konuşma tanıma kusursuz değildir. Tam eşleşme istendiği için
-> tanımanın yanlış duyduğu bir kelime kırmızı görünebilir. %90 eşiği (4-5 hata
-> payı) bunu bir ölçüde telafi eder.
+> tanımanın yanlış duyduğu bir kelime kırmızı görünebilir ve yıldızı engelleyebilir.
+> Sessiz odada, tane tane okumak en iyi sonucu verir.
 
 ## 🔧 Mikrofon çalışmıyorsa (özellikle Android)
 
